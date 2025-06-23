@@ -1,0 +1,32 @@
+<h2>Choisir une méthode :</h2>
+
+<!-- 📁 Upload fichier -->
+<div>
+  <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+</div>
+
+<!-- 📸 Capture webcam -->
+<div>
+  <button (click)="toggleWebcam()">
+    {{ showWebcam ? 'Annuler Webcam' : 'Activer Webcam' }}
+  </button>
+</div>
+
+<div *ngIf="showWebcam && !capturedImage">
+  <webcam [trigger]="triggerObservable" (imageCapture)="handleCapturedImage($event)"></webcam>
+  <button (click)="captureWebcamImage()">📸 Capturer</button>
+</div>
+
+<div *ngIf="capturedImage">
+  <h4>Image capturée :</h4>
+  <img [src]="capturedImage.imageAsDataUrl" width="200" />
+</div>
+
+<!-- ✅ Upload vers backend -->
+<button (click)="uploadImage()">Uploader</button>
+
+<!-- 🖼️ Affichage de la photo -->
+<div *ngIf="imageUrl">
+  <h3>Photo de profil :</h3>
+  <img [src]="imageUrl" width="200" />
+</div>

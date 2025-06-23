@@ -1,0 +1,86 @@
+.hero-section {
+  height: 100vh;
+  position: relative;
+
+  video {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  .z-1 {
+    z-index: 1;
+    position: relative;
+  }
+}
+
+.carousel-wrapper {
+  position: relative;
+  max-width: 100%;
+}
+
+.user-type-cards {
+  gap: 1rem;
+  scroll-behavior: smooth;
+  padding: 1rem 2rem;
+}
+
+.user-card {
+  background: linear-gradient(to bottom right, #1e1e2f, #2a2a40);
+  padding: 1rem;
+  border-radius: 20px;
+  width: 240px;
+  flex: 0 0 auto;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.user-card h5 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.user-card img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.user-card.enlarged {
+  transform: scale(1.1);
+  z-index: 5;
+  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 40%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.carousel-btn.left {
+  left: 0;
+}
+
+.carousel-btn.right {
+  right: 0;
+}
+#features {
+  scroll-margin-top: 80px; // ou la hauteur exacte de ta navbar
+}

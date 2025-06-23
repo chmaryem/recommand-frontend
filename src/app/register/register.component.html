@@ -1,0 +1,26 @@
+<div class="login-background">
+  <div class="login-glass-card">
+   <h2>Create Account</h2>
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <input type="text" name="name" [(ngModel)]="user.name" placeholder="Name" required>
+      <input type="email" name="email" [(ngModel)]="user.email" placeholder="Email" required>
+      <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password" required>
+
+      <button type="submit">Register</button>
+    </form>
+    <p *ngIf="message">{{ message }}</p>
+
+    <div class="links">
+      <a href="#">Forgot Password ?</a>
+      <a href="register" class="signup">Sign Up</a>
+    </div>
+
+    <hr />
+
+    <p class="or">OR LOGIN WITH</p>
+    <div class="social-icons">
+      <img src="assets/google.png" alt="Google">
+      <img src="assets/facebook.png" alt="Facebook">
+    </div>
+  </div>
+</div>

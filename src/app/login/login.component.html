@@ -1,0 +1,42 @@
+<div class="login-background">
+  <div class="login-glass-card">
+    <h2>Welcome</h2>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        required
+        [(ngModel)]="email"
+        #emailInput="ngModel"
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        required
+        [(ngModel)]="password"
+        #passwordInput="ngModel"
+      />
+      <button type="submit" [disabled]="!loginForm.form.valid">LOGIN</button>
+    </form>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <div class="links">
+      <a routerLink="/forgotpass">Forgot Password ?</a>
+      <a routerLink="/register" class="signup">Sign Up</a>
+    </div>
+
+    <hr />
+
+    <p class="or">OR LOGIN WITH</p>
+    <div class="social-icons">
+      <img src="assets/google.png" alt="Google" />
+      <img src="assets/facebook.png" alt="Facebook" />
+    </div>
+  </div>
+</div>

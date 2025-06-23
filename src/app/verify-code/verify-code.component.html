@@ -1,0 +1,25 @@
+<div class="login-background">
+  <div class="login-glass-card">
+    <h2>Verify Your Account</h2>
+
+    <form (ngSubmit)="onVerify()">
+      <input type="email" [(ngModel)]="email" name="email" placeholder="Enter your email"   class="email-input" required />
+
+      <div class="code-inputs">
+        <input *ngFor="let digit of codeDigits; let i = index"
+               maxlength="1"
+               type="text"
+               class="code-box"
+               [(ngModel)]="codeArray[i]"
+               name="code{{i}}"
+               (input)="onDigitInput(i, $event)"
+               (keydown)="onKeyDown(i, $event)"
+               autocomplete="one-time-code">
+      </div>
+
+      <button type="submit">Verify</button>
+    </form>
+
+    <p *ngIf="message">{{ message }}</p>
+  </div>
+</div>

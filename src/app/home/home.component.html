@@ -1,0 +1,44 @@
+<app-header></app-header>
+
+<section class="hero-section position-relative text-white text-center d-flex align-items-center justify-content-center pt-5">
+  <video id="heroVideo" autoplay muted loop class="w-100 h-100 position-absolute top-0 start-0 object-fit-cover opacity-50">
+    <source src="assets/v1.mp4" type="video/mp4" />
+    <img src="assets/m1.jpg" alt="fallback image" class="w-100 h-100 object-fit-cover" />
+  </video>
+
+  <!-- 📌 container pour l’alignement comme la navbar -->
+  <div class="container position-relative z-1">
+    <h1 class="display-4 fw-bold">Découvrez votre style du jour</h1>
+    <p class="lead mt-3 mb-4">Analyse d’humeur & météo pour une tenue parfaite.</p>
+    <a href="#features" class="btn btn-outline-light btn-lg">Commencer</a>
+  </div>
+</section>
+
+<section class="features-carousel bg-black text-white py-5" id="features">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Boost your professional workflow and productivity</h2>
+
+    <div class="carousel-wrapper position-relative">
+      <button class="carousel-btn left" (click)="scrollCarousel(-1)">&#10094;</button>
+
+      <div class="d-flex flex-nowrap overflow-auto user-type-cards" #carouselContainer>
+        <div
+          class="user-card"
+          *ngFor="let item of userTypes"
+          [class.enlarged]="item === selectedCard"
+          (click)="enlargeCard(item)">
+          <h5>{{ item.title }}</h5>
+          <img [src]="item.image" [alt]="item.title" />
+        </div>
+      </div>
+
+      <button class="carousel-btn right" (click)="scrollCarousel(1)">&#10095;</button>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-dark text-center text-white py-4 mt-auto border-top border-secondary">
+  <div class="container">
+    <small>© 2025 OutfitSense — Conçu avec ❤️ pour les passionnés de style.</small>
+  </div>
+</footer>
