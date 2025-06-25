@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { WebcamModule, WebcamImage } from 'ngx-webcam';
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+
 
 @Component({
   selector: 'app-account',
@@ -17,7 +18,6 @@ export class AccountComponent {
   selectedFile: File | null = null;
   imageUrl: string | null = null;
 
-  // Webcam logic
   showWebcam = false;
   capturedImage: WebcamImage | null = null;
   private trigger: Subject<void> = new Subject<void>();
@@ -27,13 +27,13 @@ export class AccountComponent {
 
   constructor(private uploadService: UploadService) {}
 
-  // 📁 Fichier
+
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
-    this.capturedImage = null; // reset webcam image if file selected
+    this.capturedImage = null;
   }
 
-  // 📸 Capture
+
   captureWebcamImage(): void {
     this.trigger.next();
   }
@@ -49,7 +49,8 @@ export class AccountComponent {
     this.capturedImage = null;
   }
 
-  // 🚀 Upload
+
+
   uploadImage() {
     if (this.selectedFile) {
       this.uploadService.uploadUserImage(this.selectedFile).subscribe({
