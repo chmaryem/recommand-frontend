@@ -1,20 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { UploadService } from '../services/upload.service';
+import { WeatherComponent } from '../weather/weather.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+ imports: [CommonModule, WeatherComponent],
   standalone: true,
-   templateUrl: './dashboard.component.html',
+  templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent {
-   @ViewChild('cameraPreview') cameraPreview!: ElementRef<HTMLVideoElement>;
+export class DashboardComponent implements OnInit {
+  @ViewChild('cameraPreview') cameraPreview!: ElementRef<HTMLVideoElement>;
 
   currentStream: MediaStream | null = null;
   moodAnalyzed = false;
   isAnalyzing = false;
   showCaptureButtons = false;
+  capturedImageUrl: string | null = null;
+
   currentMood = {
     emoji: '😊',
     text: 'Vous semblez joyeux aujourd\'hui!',
@@ -71,40 +75,13 @@ export class DashboardComponent {
   ];
 
   // User info
-
- user = {
+  user = {
     name: '',
     firstName: '',
     status: '',
-    initials: ''
+    initials: '',
+    imageUrl: ''
   };
-
- ngOnInit(): void {
-  const userData = localStorage.getItem('user');
-
-  if (!userData || userData === 'undefined') {
-    console.warn('Aucune donnée utilisateur trouvée ou invalide.');
-    return;
-  }
-
-  try {
-    const userObj = JSON.parse(userData);
-    this.user.name = userObj.name || '';
-    this.user.firstName = userObj.firstName || userObj.name || '';
-    this.user.status = 'Utilisateur';
-    this.user.initials = this.getInitials(this.user.name);
-  } catch (e) {
-    console.error('Erreur parsing utilisateur:', e);
-
-  }
-}
-
-
-
-  getInitials(fullName: string): string {
-    return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
-  }
-
 
   // Weather info
   weather = {
@@ -118,6 +95,36 @@ export class DashboardComponent {
   showToastMessage = '';
   showToast = false;
 
+  constructor(private uploadService: UploadService) {}
+
+  ngOnInit(): void {
+    const userData = localStorage.getItem('user');
+
+    if (!userData || userData === 'undefined') {
+      console.warn('Aucune donnée utilisateur trouvée ou invalide.');
+      return;
+    }
+
+    try {
+      const userObj = JSON.parse(userData);
+      this.user.name = userObj.name || '';
+      this.user.firstName = userObj.firstName || userObj.name || '';
+      this.user.status = 'Utilisateur';
+      this.user.initials = this.getInitials(this.user.name);
+
+      // Charger l'image de profil si elle existe
+      if (userObj.image) {
+        this.user.imageUrl = `http://localhost:8075/user/image/${userObj.image}`;
+      }
+    } catch (e) {
+      console.error('Erreur parsing utilisateur:', e);
+    }
+  }
+
+  getInitials(fullName: string): string {
+    return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
   toggleCaptureOptions(): void {
     this.showCaptureButtons = !this.showCaptureButtons;
   }
@@ -126,7 +133,12 @@ export class DashboardComponent {
     event.stopPropagation();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        }
+      });
       this.currentStream = stream;
 
       if (this.cameraPreview) {
@@ -138,14 +150,44 @@ export class DashboardComponent {
       this.displayToast('Capture dans 3 secondes...');
 
       setTimeout(() => {
-        this.stopCamera();
-        this.analyzeMood();
+        this.captureImageFromCamera();
       }, 3000);
 
     } catch (error) {
       console.error('Erreur caméra:', error);
       this.displayToast('Impossible d\'accéder à la caméra');
     }
+  }
+
+  captureImageFromCamera(): void {
+    if (!this.cameraPreview || !this.currentStream) {
+      return;
+    }
+
+    const video = this.cameraPreview.nativeElement;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      this.displayToast('Erreur lors de la capture');
+      return;
+    }
+
+    // Définir les dimensions du canvas
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Dessiner l'image de la vidéo sur le canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convertir en base64
+    const base64DataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+    // Arrêter la caméra
+    this.stopCamera();
+
+    // Uploader l'image
+    this.uploadBase64Image(base64DataUrl);
   }
 
   uploadPhoto(event: Event): void {
@@ -157,11 +199,48 @@ export class DashboardComponent {
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
-        this.displayToast('Photo uploadée, analyse en cours...');
-        this.analyzeMood();
+        this.uploadFileImage(file);
       }
     };
     input.click();
+  }
+
+  uploadFileImage(file: File): void {
+    this.isAnalyzing = true;
+    this.displayToast('Upload en cours...');
+
+    this.uploadService.uploadUserImage(file).subscribe({
+      next: (fileName: string) => {
+        console.log('Image uploadée avec succès:', fileName);
+        this.capturedImageUrl = `http://localhost:8075/user/image/${fileName}`;
+        this.analyzeMood();
+        this.displayToast('Image uploadée avec succès!');
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'upload:', error);
+        this.isAnalyzing = false;
+        this.displayToast('Erreur lors de l\'upload de l\'image');
+      }
+    });
+  }
+
+  uploadBase64Image(base64DataUrl: string): void {
+    this.isAnalyzing = true;
+    this.displayToast('Capture en cours de traitement...');
+
+    this.uploadService.uploadBase64Image(base64DataUrl).subscribe({
+      next: (fileName: string) => {
+        console.log('Image capturée et uploadée avec succès:', fileName);
+        this.capturedImageUrl = `http://localhost:8075/user/image/${fileName}`;
+        this.analyzeMood();
+        this.displayToast('Capture réussie!');
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'upload de la capture:', error);
+        this.isAnalyzing = false;
+        this.displayToast('Erreur lors du traitement de la capture');
+      }
+    });
   }
 
   stopCamera(): void {
@@ -176,14 +255,30 @@ export class DashboardComponent {
   }
 
   analyzeMood(): void {
-    this.isAnalyzing = true;
-
     // Simulate mood analysis
     setTimeout(() => {
       this.isAnalyzing = false;
       this.moodAnalyzed = true;
+
+      // Simuler différentes humeurs basées sur l'analyse
+      const moods = [
+        { emoji: '😊', text: 'Vous semblez joyeux aujourd\'hui!', confidence: 87 },
+        { emoji: '😌', text: 'Vous paraissez serein et détendu', confidence: 82 },
+        { emoji: '😄', text: 'Votre sourire illumine votre journée!', confidence: 91 },
+        { emoji: '🤔', text: 'Vous semblez pensif aujourd\'hui', confidence: 78 },
+        { emoji: '😮', text: 'Vous paraissez surpris ou étonné', confidence: 75 }
+      ];
+
+      this.currentMood = moods[Math.floor(Math.random() * moods.length)];
       this.displayToast('Analyse terminée ! Voici vos recommandations.');
     }, 2000);
+  }
+
+  retakePhoto(): void {
+    this.moodAnalyzed = false;
+    this.capturedImageUrl = null;
+    this.showCaptureButtons = false;
+    this.displayToast('Prêt pour une nouvelle capture');
   }
 
   giveFeedback(type: 'like' | 'dislike', outfitIndex: number): void {
@@ -247,4 +342,8 @@ export class DashboardComponent {
     }, 3000);
   }
 
+  // Méthode pour nettoyer les ressources lors de la destruction du composant
+  ngOnDestroy(): void {
+    this.stopCamera();
+  }
 }
