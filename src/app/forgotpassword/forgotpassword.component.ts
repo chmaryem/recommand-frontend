@@ -21,30 +21,33 @@ export class ForgotpasswordComponent {
 
   constructor(private forgotPass: forgotPasswordService) {}
 
-  sendOtp() {
-    this.forgotPass.sendOtpEmail(this.email).subscribe({
-      next: () => {
-        this.message = 'OTP sent to your email.';
-        this.step = 2;
-      },
-      error: (err) => {
-        this.message = err.error?.message || 'Failed to send OTP.';
-      }
-    });
-  }
+ sendOtp() {
+  this.forgotPass.sendOtpEmail(this.email).subscribe({
+    next: () => {
+      this.message = 'OTP sent to your email.';
+      this.step = 2;
+    },
+    error: (err) => {
+      console.error("Erreur reçue dans sendOtp:", err); // ✅ Ajoute ceci
+      this.message = err.error?.message || 'Failed to send OTP.';
+    }
+  });
+}
 
-  verifyOtp() {
-    this.forgotPass.verifyOtp(this.email, Number(this.otp)).subscribe({
-      next: () => {
-        this.message = 'OTP verified.';
-        this.step = 3;
-      },
-      error: (err) => {
 
-        this.message = err.error?.message || 'Invalid or expired OTP.';
-      }
-    });
-  }
+ verifyOtp() {
+  this.forgotPass.verifyOtp(this.email, Number(this.otp)).subscribe({
+    next: () => {
+      this.message = 'OTP verified.';
+      this.step = 3;
+    },
+    error: (err) => {
+      console.error("Erreur OTP:", err);
+      this.message = err.error?.message || 'Invalid or expired OTP.';
+    }
+  });
+}
+
 
   changePassword() {
     if (this.password !== this.repeatPassword) {
@@ -62,6 +65,28 @@ export class ForgotpasswordComponent {
       }
     });
   }
+  otpArray: string[] = ['', '', '', '', '', ''];
+otpDigits = Array(6).fill(0); // pour *ngFor
+
+onDigitInput(index: number, event: any) {
+  const input = event.target;
+  const value = input.value;
+
+  if (value.length === 1 && index < 5) {
+    const nextInput = document.querySelectorAll('.code-box')[index + 1] as HTMLElement;
+    nextInput?.focus();
+  }
+
+  this.otp = this.otpArray.join('');
+}
+
+onKeyDown(index: number, event: KeyboardEvent) {
+  if (event.key === 'Backspace' && this.otpArray[index] === '' && index > 0) {
+    const prevInput = document.querySelectorAll('.code-box')[index - 1] as HTMLElement;
+    prevInput?.focus();
+  }
+}
+
 }
 
 

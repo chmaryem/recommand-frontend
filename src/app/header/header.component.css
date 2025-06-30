@@ -1,0 +1,57 @@
+:host(.header-overlay) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: transparent; /* ✅ aucune couleur de fond */
+  padding: 1rem 2rem;
+}
+
+.custom-navbar {
+  width: 100%;
+  padding: 0;
+  background: transparent !important; /* ✅ Supprime les gris */
+  box-shadow: none;
+}
+
+.navbar-brand {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #ffffff !important;
+}
+
+.nav-link {
+  color: #ffffff !important;
+  font-weight: 500;
+  margin: 0 0.8rem;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #f2dc9c !important;
+}
+
+.nav-link.active {
+  color: #ef8adf !important;
+}
+
+.user-icon i {
+  font-size: 1.5rem;
+  color: #ffffff;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.user-icon i:hover {
+  transform: scale(1.15);
+  color: #f09ee1;
+}
+
+.navbar-toggler {
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggler-icon {
+  filter: invert(1);
+}

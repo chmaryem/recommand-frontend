@@ -3,13 +3,16 @@ import { HeaderComponent } from "../header/header.component";
 import { CommonModule } from '@angular/common';
 
 
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
-  imports: [CommonModule, HeaderComponent]
 
+ @Component({
+  selector: 'app-home',
+  standalone: true,
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css'],
+  imports: [CommonModule, HeaderComponent]
 })
+
+
 export class HomeComponent  implements AfterViewInit {
     ngAfterViewInit(): void {
     const videoElement = document.getElementById('heroVideo') as HTMLVideoElement;

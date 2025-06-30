@@ -26,13 +26,21 @@ export class LoginComponent  {
 
     this.authService.login(credentials).subscribe({
       next: (res) => {
-        if (res.statusCode === 200) {
-          // Enregistrer le token dans le localStorage
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('refreshToken', res.refreshToken);
-          localStorage.setItem('role', res.role);
-          this.router.navigate(['/account']);
-        } else {
+    if (res.statusCode === 200) {
+  localStorage.setItem('token', res.token);
+  localStorage.setItem('refreshToken', res.refreshToken);
+  localStorage.setItem('role', res.role);
+
+  // ✅ Enregistrement des infos utilisateur
+  const user = {
+    name: res.name,
+    firstName: res.name, // si tu n'as pas de champ séparé firstName
+    email: res.email
+  };
+  localStorage.setItem('user', JSON.stringify(user));
+
+  this.router.navigate(['/dashboard']);}
+ else {
           this.errorMessage = res.message;
         }
       },
