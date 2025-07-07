@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { UserPreferenceService } from '../services/user-preference.service';
 
 export interface StyleOption {
   value: string;
@@ -83,10 +84,14 @@ export class StylePreferencesComponent implements OnInit {
     { value: 'beige', label: 'Beige', hex: '#F5F5DC' }
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private userPreferenceService: UserPreferenceService
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadExistingPreferences();
   }
 
   private initializeForm(): void {
@@ -100,6 +105,56 @@ export class StylePreferencesComponent implements OnInit {
       notificationsActivees: [false],
       heureNotification: ['08:00']
     });
+  }
+
+  private loadExistingPreferences(): void {
+    this.userPreferenceService.getPreferences().subscribe({
+      next: (preferences: any) => {
+        if (preferences) {
+          this.populateForm(preferences);
+        }
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des préférences:', error);
+        // Ne pas afficher d'erreur si c'est juste que l'utilisateur n'a pas encore de préférences
+      }
+    });
+  }
+
+  private populateForm(preferences: any): void {
+    // Mise à jour des valeurs du formulaire avec les préférences existantes
+    this.preferenceForm.patchValue({
+      styleVestimentaire: preferences.styleVestimentaire || '',
+      taille: preferences.taille || '',
+      budget: preferences.budget || '',
+      notificationsActivees: preferences.notificationsActivees || false,
+      heureNotification: preferences.heureNotification || '08:00'
+    });
+
+    // Mise à jour des arrays (otherPreferences, couleursFavorites, occasionsFrequentes)
+    if (preferences.otherPreferences) {
+      const preferencesArray = this.preferenceForm.get('otherPreferences') as FormArray;
+      preferencesArray.clear();
+      preferences.otherPreferences.forEach((pref: string) => {
+        preferencesArray.push(this.fb.control(pref));
+      });
+    }
+
+    if (preferences.couleursFavorites) {
+      const colorsArray = this.preferenceForm.get('couleursFavorites') as FormArray;
+      colorsArray.clear();
+      preferences.couleursFavorites.forEach((color: string) => {
+        colorsArray.push(this.fb.control(color));
+      });
+    }
+
+    if (preferences.occasionsFrequentes) {
+      const occasionsArray = this.preferenceForm.get('occasionsFrequentes') as FormArray;
+      occasionsArray.clear();
+      preferences.occasionsFrequentes.forEach((occasion: string) => {
+        occasionsArray.push(this.fb.control(occasion));
+      });
+    }
   }
 
   selectStyle(styleValue: string): void {
@@ -144,20 +199,30 @@ export class StylePreferencesComponent implements OnInit {
       this.showSuccess = false;
       this.showError = false;
 
-      // Simulate API call
-      setTimeout(() => {
-        try {
-          const formData = this.preferenceForm.value;
-          
+      const formData = this.preferenceForm.value;
+      
+      const preferenceData = {
+        styleVestimentaire: formData.styleVestimentaire,
+        otherPreferences: formData.otherPreferences,
+        couleursFavorites: formData.couleursFavorites,
+        taille: formData.taille,
+        budget: formData.budget,
+        occasionsFrequentes: formData.occasionsFrequentes,
+        heureNotification: formData.notificationsActivees ? formData.heureNotification : null,
+        notificationsActivees: formData.notificationsActivees
+      };
+
+      this.userPreferenceService.savePreferences(preferenceData).subscribe({
+        next: (response: any) => {
           this.savedPreferences = {
-            styleVestimentaire: formData.styleVestimentaire,
-            otherPreferences: formData.otherPreferences,
-            couleursFavorites: formData.couleursFavorites,
-            taille: formData.taille,
-            budget: formData.budget,
-            occasionsFrequentes: formData.occasionsFrequentes,
-            notificationTime: formData.notificationsActivees ? formData.heureNotification : undefined,
-            notificationsActivees: formData.notificationsActivees
+            styleVestimentaire: preferenceData.styleVestimentaire,
+            otherPreferences: preferenceData.otherPreferences,
+            couleursFavorites: preferenceData.couleursFavorites,
+            taille: preferenceData.taille,
+            budget: preferenceData.budget,
+            occasionsFrequentes: preferenceData.occasionsFrequentes,
+            notificationTime: preferenceData.heureNotification,
+            notificationsActivees: preferenceData.notificationsActivees
           };
 
           this.isLoading = false;
@@ -169,17 +234,20 @@ export class StylePreferencesComponent implements OnInit {
             this.showSuccess = false;
           }, 3000);
 
-          console.log('Préférences sauvegardées:', this.savedPreferences);
-        } catch (error) {
+          console.log('Préférences sauvegardées avec succès:', response);
+        },
+        error: (error: any) => {
           this.isLoading = false;
           this.showError = true;
-          this.errorMessage = 'Une erreur est survenue lors de la sauvegarde.';
+          this.errorMessage = error.error?.message || 'Une erreur est survenue lors de la sauvegarde.';
           
           setTimeout(() => {
             this.showError = false;
           }, 5000);
+
+          console.error('Erreur lors de la sauvegarde:', error);
         }
-      }, 1500);
+      });
     } else {
       this.showError = true;
       this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
@@ -187,6 +255,45 @@ export class StylePreferencesComponent implements OnInit {
       setTimeout(() => {
         this.showError = false;
       }, 5000);
+    }
+  }
+
+  deletePreferences(): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer toutes vos préférences ?')) {
+      this.isLoading = true;
+      this.showSuccess = false;
+      this.showError = false;
+
+      this.userPreferenceService.deletePreferences().subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showSuccess = true;
+          this.showCardAfterSubmit = false;
+          this.savedPreferences = null;
+          
+          // Reset the form
+          this.preferenceForm.reset();
+          this.initializeForm();
+          
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            this.showSuccess = false;
+          }, 3000);
+
+          console.log('Préférences supprimées avec succès');
+        },
+        error: (error: any) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.errorMessage = error.error?.message || 'Une erreur est survenue lors de la suppression.';
+          
+          setTimeout(() => {
+            this.showError = false;
+          }, 5000);
+
+          console.error('Erreur lors de la suppression:', error);
+        }
+      });
     }
   }
 }

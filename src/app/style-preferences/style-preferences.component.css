@@ -359,6 +359,10 @@
 .submit-section {
   margin-top: 3rem;
   text-align: center;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .submit-btn {
@@ -387,6 +391,30 @@
 
 .submit-btn.loading {
   pointer-events: none;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  color: white;
+  border: none;
+  padding: 1.25rem 3rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(229, 62, 62, 0.3);
+  min-width: 280px;
+}
+
+.delete-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(229, 62, 62, 0.4);
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-content {
@@ -548,8 +576,13 @@
     grid-template-columns: 1fr;
   }
   
-  .submit-btn {
+  .submit-btn, .delete-btn {
     padding: 1rem 2rem;
     min-width: 240px;
+  }
+  
+  .submit-section {
+    flex-direction: column;
+    align-items: center;
   }
 }

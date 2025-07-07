@@ -140,6 +140,17 @@
           </span>
           <span *ngIf="isLoading" class="loading-spinner"></span>
         </button>
+        
+        <button
+          type="button"
+          class="delete-btn"
+          [disabled]="isLoading"
+          (click)="deletePreferences()">
+          <span class="btn-content">
+            <span class="btn-icon">🗑️</span>
+            Supprimer mes préférences
+          </span>
+        </button>
       </div>
 
     </form>
