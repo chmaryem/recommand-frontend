@@ -20,8 +20,8 @@ export class VerifyCodeComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  onDigitInput(index: number, event: any) {
-    const input = event.target;
+  onDigitInput(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
     const value = input.value;
 
     // avance automatiquement si un chiffre est saisi

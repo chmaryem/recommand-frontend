@@ -68,8 +68,8 @@ export class ForgotpasswordComponent {
   otpArray: string[] = ['', '', '', '', '', ''];
 otpDigits = Array(6).fill(0); // pour *ngFor
 
-onDigitInput(index: number, event: any) {
-  const input = event.target;
+onDigitInput(index: number, event: Event) {
+  const input = event.target as HTMLInputElement;
   const value = input.value;
 
   if (value.length === 1 && index < 5) {

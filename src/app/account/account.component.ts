@@ -28,8 +28,9 @@ export class AccountComponent {
   constructor(private uploadService: UploadService) {}
 
 
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedFile = (input.files && input.files[0]) ? input.files[0] : null;
     this.capturedImage = null;
   }
 

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { WeatherService } from '../services/weather.service';
+import { WeatherApiResponse } from '../models/weather.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -12,7 +13,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./weather.component.css']
 })
 export class WeatherComponent implements OnInit {
-weather: any = null;
+weather: WeatherApiResponse | null = null;
   loading = true;
   error = '';
 
@@ -26,18 +27,18 @@ weather: any = null;
           const lon = position.coords.longitude;
 
           this.weatherService.getWeatherByCoords(lat, lon).subscribe({
-            next: (data) => {
+            next: (data: WeatherApiResponse) => {
               this.weather = data;
               this.loading = false;
             },
-            error: (err) => {
+            error: (err: unknown) => {
               this.error = 'Erreur météo';
               console.error(err);
               this.loading = false;
             }
           });
         },
-        (err) => {
+        (err: GeolocationPositionError) => {
           this.error = 'Permission de localisation refusée.';
           console.error(err);
           this.loading = false;
