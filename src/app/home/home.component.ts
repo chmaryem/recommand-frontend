@@ -2,6 +2,10 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
 import { CommonModule } from '@angular/common';
 
+interface Card {
+  title: string;
+  image: string;
+}
 
 
  @Component({
@@ -25,16 +29,16 @@ export class HomeComponent  implements AfterViewInit {
   }
     @ViewChild('carouselContainer', { static: false }) carouselContainer!: ElementRef;
 
-  selectedCard: any = null;
+  selectedCard: Card | null = null;
 
-  userTypes = [
+  userTypes: Card[] = [
     { title: 'Designers', image: 'assets/m1.jpg' },
     { title: 'Marketers', image: 'assets/m2.jpg' },
     { title: 'VFX filmmakers', image: 'assets/m2.jpg' },
     { title: 'Content creators', image: 'assets/m2.jpg' }
   ];
 
-  enlargeCard(item: any): void {
+  enlargeCard(item: Card): void {
     this.selectedCard = item;
   }
 

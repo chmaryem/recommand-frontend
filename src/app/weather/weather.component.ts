@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { WeatherService } from '../services/weather.service';
 import { WeatherApiResponse } from '../models/weather.model';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-weather',
   standalone: true,
-   imports: [CommonModule, FormsModule],
+   imports: [CommonModule],
 
   templateUrl: './weather.component.html',
   styleUrls: ['./weather.component.css']

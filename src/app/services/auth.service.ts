@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { RegisterRequest, LoginRequest, AuthResponse } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,19 +11,19 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/register`, userData);
+  register(userData: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, userData);
   }
 
-  verifyCode(email: string, code: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/verify-code`, { email, code });
+  verifyCode(email: string, code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/verify-code`, { email, code });
   }
 
-  login(credentials: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/login`, credentials);
+  login(credentials: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
   }
 
-  refreshToken(token: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/refresh`, { token });
+  refreshToken(token: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/refresh`, { token });
   }
 }

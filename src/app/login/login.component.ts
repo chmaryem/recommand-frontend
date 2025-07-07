@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { AuthResponse } from '../models/auth.model';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,23 +26,23 @@ export class LoginComponent  {
     };
 
     this.authService.login(credentials).subscribe({
-      next: (res) => {
+      next: (res: AuthResponse) => {
     if (res.statusCode === 200) {
   localStorage.setItem('token', res.token);
-  localStorage.setItem('refreshToken', res.refreshToken);
-  localStorage.setItem('role', res.role);
+  localStorage.setItem('refreshToken', res.refreshToken ?? '');
+  localStorage.setItem('role', res.role ?? '');
 
   // ✅ Enregistrement des infos utilisateur
   const user = {
-    name: res.name,
-    firstName: res.name, // si tu n'as pas de champ séparé firstName
-    email: res.email
+    name: res.name ?? '',
+    firstName: res.name ?? '', // fallback
+    email: res.email ?? ''
   };
   localStorage.setItem('user', JSON.stringify(user));
 
   this.router.navigate(['/dashboard']);}
  else {
-          this.errorMessage = res.message;
+          this.errorMessage = res.message ?? 'Erreur inconnue';
         }
       },
       error: (err) => {

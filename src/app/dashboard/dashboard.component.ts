@@ -196,8 +196,9 @@ export class DashboardComponent implements OnInit {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
+    input.onchange = (e: Event) => {
+      const fileInput = e.target as HTMLInputElement;
+      const file = fileInput.files && fileInput.files[0];
       if (file) {
         this.uploadFileImage(file);
       }

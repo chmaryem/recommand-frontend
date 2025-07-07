@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { AuthResponse } from '../models/auth.model';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,8 +26,8 @@ export class RegisterComponent {
 
   onSubmit() {
     this.authService.register(this.user).subscribe({
-      next: (res) => {
-        this.message = res.message;
+      next: (res: AuthResponse) => {
+        this.message = res.message ?? 'Inscription réussie';
         alert('Registration successful! Please check your email for the verification code.');
         this.router.navigate(['/verify']);
       },
