@@ -9,7 +9,6 @@ import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.compone
 import { AccountComponent } from './account/account.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WeatherComponent } from './weather/weather.component';
-import { PreferencesComponent } from './preferences/preferences.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -22,5 +21,8 @@ export const routes: Routes = [
   { path: 'forgotpass', component: ForgotpasswordComponent },
   { path: 'account', component: AccountComponent },
   { path: 'weather', component: WeatherComponent },
-  { path: 'preferences', component: PreferencesComponent },
+  {
+    path: 'preferences',
+    loadComponent: () => import('./preferences/preferences.component').then(m => m.PreferencesComponent)
+  },
 ];

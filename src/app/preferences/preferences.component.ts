@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PreferencesService } from '../services/preferences.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { StylePreferences, SavePreferencesResponse } from '../models/style-preferences.model';
 
 interface Option {
   label: string;
@@ -16,7 +17,7 @@ interface Option {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, SidebarComponent],
   templateUrl: './preferences.component.html',
-  styleUrl: './preferences.component.css'
+  styleUrls: ['./preferences.component.css']
 })
 export class PreferencesComponent implements OnInit {
   preferenceForm!: FormGroup;
@@ -48,7 +49,7 @@ export class PreferencesComponent implements OnInit {
   showError = false;
   errorMessage = '';
 
-  savedPreferences: any;
+  savedPreferences: StylePreferences | null = null;
   showCardAfterSubmit = false;
 
   constructor(private fb: FormBuilder, private prefService: PreferencesService) {}
@@ -106,19 +107,20 @@ export class PreferencesComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.prefService.savePreferences(this.preferenceForm.value).subscribe({
-      next: (res: any) => {
+    const payload: StylePreferences = this.preferenceForm.value as StylePreferences;
+    this.prefService.savePreferences(payload).subscribe({
+      next: (res: SavePreferencesResponse) => {
         this.isLoading = false;
         this.showSuccess = true;
-        this.savedPreferences = res || this.preferenceForm.value;
+        this.savedPreferences = res.data || payload;
         this.showCardAfterSubmit = true;
         // Hide success msg after 5s
         setTimeout(() => (this.showSuccess = false), 5000);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         this.isLoading = false;
         this.showError = true;
-        this.errorMessage = err?.message || 'Erreur inconnue';
+        this.errorMessage = (err as Error)?.message ?? 'Erreur inconnue';
         setTimeout(() => (this.showError = false), 5000);
       }
     });
