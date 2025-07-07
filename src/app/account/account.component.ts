@@ -12,7 +12,7 @@ import { Observable, Subject } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, WebcamModule],
   templateUrl: './account.component.html',
-  styleUrl: './account.component.css'
+  styleUrls: ['./account.component.css']
 })
 export class AccountComponent {
   selectedFile: File | null = null;

@@ -181,12 +181,12 @@
       <strong>Préférences :</strong> {{ savedPreferences.otherPreferences }}
     </li>
     <li *ngIf="savedPreferences.couleursFavorites?.length">
-      <strong>Couleurs :</strong> {{ savedPreferences.couleursFavorites.join(', ') }}
+      <strong>Couleurs :</strong> {{ savedPreferences.couleursFavorites?.join(', ') }}
     </li>
     <li *ngIf="savedPreferences.taille"><strong>Taille :</strong> {{ savedPreferences.taille }}</li>
     <li *ngIf="savedPreferences.budget"><strong>Budget :</strong> {{ savedPreferences.budget }}</li>
     <li *ngIf="savedPreferences.occasionsFrequentes?.length">
-      <strong>Occasions :</strong> {{ savedPreferences.occasionsFrequentes.join(', ') }}
+      <strong>Occasions :</strong> {{ savedPreferences.occasionsFrequentes?.join(', ') }}
     </li>
     <li *ngIf="savedPreferences.heureNotification">
       <strong>Notification à :</strong> {{ savedPreferences.heureNotification }}

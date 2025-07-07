@@ -6,6 +6,7 @@ export interface StylePreferences {
   budget?: string;
   notificationsActivees?: boolean;
   heureNotification?: string;
+  occasionsFrequentes?: string[];
 }
 
 export interface SavePreferencesResponse {

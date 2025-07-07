@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
    imports: [CommonModule, FormsModule],
 
   templateUrl: './weather.component.html',
-  styleUrl: './weather.component.css'
+  styleUrls: ['./weather.component.css']
 })
 export class WeatherComponent implements OnInit {
 weather: any = null;
