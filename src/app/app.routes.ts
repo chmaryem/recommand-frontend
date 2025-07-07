@@ -9,6 +9,7 @@ import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.compone
 import { AccountComponent } from './account/account.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WeatherComponent } from './weather/weather.component';
+import { StylePreferencesComponent } from './style-preferences/style-preferences.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -21,4 +22,5 @@ export const routes: Routes = [
   { path: 'forgotpass', component: ForgotpasswordComponent },
   { path: 'account', component: AccountComponent },
   { path: 'weather', component: WeatherComponent },
+  { path: 'style-preferences', component: StylePreferencesComponent },
 ];

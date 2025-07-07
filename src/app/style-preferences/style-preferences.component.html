@@ -1,0 +1,190 @@
+<div class="style-preferences-container">
+  <!-- Sidebar -->
+  <div class="preferences-sidebar">
+    <app-sidebare></app-sidebare>
+  </div>
+
+  <!-- Header -->
+  <header class="preferences-header">
+    <div class="preferences-header-left">
+      <h1>Préférences de Style</h1>
+      <p>Personnalisez votre garde-robe</p>
+    </div>
+    <div class="preferences-header-right">
+      <div class="preferences-user-profile">
+        <div class="preferences-user-avatar">U</div>
+        <div class="preferences-user-details">
+          <h4>Utilisateur</h4>
+          <p>Membre</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Form -->
+  <div class="style-form-wrapper">
+    <form [formGroup]="preferenceForm" (ngSubmit)="onSubmit()" class="preference-form">
+
+      <!-- Style Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <span class="section-icon"></span>
+          Style vestimentaire habituel
+        </h3>
+        <div class="style-grid">
+          <div *ngFor="let style of styleOptions"
+               class="style-card"
+               [class.selected]="preferenceForm.get('styleVestimentaire')?.value === style.value"
+               (click)="selectStyle(style.value)">
+            <div class="style-icon">{{style.icon}}</div>
+            <div class="style-name">{{style.label}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferences Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <span class="section-icon"></span>
+          Préférences additionnelles
+        </h3>
+        <div class="preferences-grid">
+          <div *ngFor="let pref of preferenceOptions"
+               class="preference-tag"
+               [class.selected]="isPreferenceSelected(pref.value)"
+               (click)="togglePreference(pref.value)">
+            <span class="pref-icon">{{pref.icon}}</span>
+            {{pref.label}}
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <span class="section-icon"></span>
+          Couleurs favorites
+        </h3>
+        <div class="colors-grid">
+          <div *ngFor="let color of colorOptions"
+               class="color-option"
+               [class.selected]="isColorSelected(color.value)"
+               (click)="toggleColor(color.value)">
+            <div class="color-circle" [style.background-color]="color.hex"></div>
+            <span class="color-name">{{color.label}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Size and Budget -->
+      <div class="form-section">
+        <div class="row-inputs">
+          <div class="input-group half-width">
+            <label for="taille">Taille</label>
+            <select id="taille" formControlName="taille" class="modern-select">
+              <option value="">Sélectionner</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <span class="section-icon"></span>
+          Minute de style quotidienne
+        </h3>
+        <div class="notification-controls">
+          <div class="notification-toggle">
+            <input
+              type="checkbox"
+              id="notifications"
+              formControlName="notificationsActivees"
+              class="toggle-checkbox"
+            >
+            <label for="notifications" class="toggle-label">
+              <span class="toggle-slider"></span>
+              Activer les notifications
+            </label>
+          </div>
+
+          <div *ngIf="preferenceForm.get('notificationsActivees')?.value"
+               class="time-selector">
+            <label for="heureNotification">Heure de notification</label>
+            <input
+              id="heureNotification"
+              type="time"
+              formControlName="heureNotification"
+              class="modern-input time-input"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="submit-section">
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="preferenceForm.invalid || isLoading"
+          [class.loading]="isLoading">
+          <span *ngIf="!isLoading" class="btn-content">
+            <span class="btn-icon">💫</span>
+            Sauvegarder mes préférences
+          </span>
+          <span *ngIf="isLoading" class="loading-spinner"></span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="showSuccess" class="success-message">
+    <div class="success-content">
+      <span class="success-icon">✅</span>
+      Préférences sauvegardées avec succès !
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="showError" class="error-message-global">
+    <div class="error-content">
+      <span class="error-icon">❌</span>
+      {{errorMessage}}
+    </div>
+  </div>
+
+  <!-- Ajoute ce bloc à la fin du fichier HTML -->
+  <div *ngIf="showCardAfterSubmit && savedPreferences" class="preference-card">
+    <h3>🧾 Récapitulatif de vos préférences</h3>
+    <ul>
+      <li><strong>Style :</strong> {{ savedPreferences.styleVestimentaire }}</li>
+      <li *ngIf="savedPreferences.otherPreferences?.length">
+        <strong>Préférences :</strong> {{ savedPreferences.otherPreferences }}
+      </li>
+      <li *ngIf="savedPreferences.couleursFavorites?.length">
+        <strong>Couleurs :</strong> {{ savedPreferences.couleursFavorites.join(', ') }}
+      </li>
+      <li *ngIf="savedPreferences.taille"><strong>Taille :</strong> {{ savedPreferences.taille }}</li>
+      <li *ngIf="savedPreferences.budget"><strong>Budget :</strong> {{ savedPreferences.budget }}</li>
+      <li *ngIf="savedPreferences.occasionsFrequentes?.length">
+        <strong>Occasions :</strong> {{ savedPreferences.occasionsFrequentes.join(', ') }}
+      </li>
+      <li *ngIf="savedPreferences.notificationTime">
+        <strong>Notification à :</strong> {{ savedPreferences.notificationTime }}
+      </li>
+      <li>
+        <strong>Notifications activées :</strong>
+        {{ savedPreferences.notificationsActivees ? 'Oui' : 'Non' }}
+      </li>
+    </ul>
+  </div>
+
+</div>

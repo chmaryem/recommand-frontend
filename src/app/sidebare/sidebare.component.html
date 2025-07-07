@@ -1,0 +1,33 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">✨</span>
+      <span class="logo-text">StyleApp</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li 
+        *ngFor="let item of menuItems; let i = index"
+        class="nav-item"
+        [class.active]="item.active"
+        (click)="setActiveItem(i)">
+        <a [routerLink]="item.route" class="nav-link">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">U</div>
+      <div class="user-details">
+        <div class="user-name">Utilisateur</div>
+        <div class="user-status">En ligne</div>
+      </div>
+    </div>
+  </div>
+</aside>
