@@ -1,13 +1,52 @@
 <div class="login-background">
   <div class="login-glass-card">
    <h2>Create Account</h2>
-    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
-      <input type="text" name="name" [(ngModel)]="user.name" placeholder="Name" required>
-      <input type="email" name="email" [(ngModel)]="user.email" placeholder="Email" required>
-      <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password" required>
+   <form (ngSubmit)="onSubmit()" #registerForm="ngForm" novalidate>
 
-      <button type="submit">Register</button>
-    </form>
+  <input
+    type="text"
+    name="name"
+    [(ngModel)]="user.name"
+    placeholder="Name"
+    required
+    #name="ngModel"
+  />
+  <div *ngIf="name.invalid && name.touched" class="error">Name is required.</div>
+
+  <input
+    type="email"
+    name="email"
+    [(ngModel)]="user.email"
+    placeholder="Email"
+    required
+    email
+    #email="ngModel"
+  />
+  <div *ngIf="email.invalid && email.touched" class="error">
+    <div *ngIf="email.errors?.['required']">Email is required.</div>
+    <div *ngIf="email.errors?.['email']">Enter a valid email.</div>
+  </div>
+  <input
+    type="password"
+    name="password"
+    [(ngModel)]="user.password"
+    placeholder="Password"
+    required
+    minlength="8"
+    #password="ngModel"
+  />
+  <div *ngIf="password.invalid && password.touched" class="error">
+    <div *ngIf="password.errors?.['required']">Password is required.</div>
+    <div *ngIf="password.errors?.['minlength']">Password must be at least 8 characters.</div>
+  </div>
+
+  <button type="submit" [disabled]="registerForm.invalid || isLoading">
+  <span *ngIf="!isLoading">Register</span>
+  <span *ngIf="isLoading" class="spinner"></span>
+</button>
+
+</form>
+
     <p *ngIf="message">{{ message }}</p>
 
     <div class="links">
@@ -23,4 +62,25 @@
       <img src="assets/facebook.jpg" alt="Facebook">
     </div>
   </div>
+  <!-- Error Modal -->
+<!-- Error Modal -->
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Error</h3>
+    <p>{{ message }}</p>
+    <button (click)="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- ✅ Success Modal -->
+<div *ngIf="showSuccessModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="color: green;">Success</h3>
+    <p>{{ successMessage }}</p>
+    <button (click)="closeModalSucess()">Close</button>
+  </div>
+</div>
+
+
+
 </div>

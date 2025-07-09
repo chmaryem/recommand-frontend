@@ -22,4 +22,12 @@
 
     <p *ngIf="message">{{ message }}</p>
   </div>
+  <!-- ✅ Success Modal -->
+  <div *ngIf="showSuccessModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Success</h3>
+      <p>Your email has been successfully verified!</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
 </div>

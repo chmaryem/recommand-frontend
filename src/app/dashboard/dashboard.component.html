@@ -1,122 +1,89 @@
 <div class="mf-container">
-
   <div class="mf-sidebar">
-    <div class="mf-logo">
-      <div class="mf-logo-icon">👗</div>
-      <span>Outfit Maker</span>
-    </div>
-
-    <nav>
-      <ul class="mf-nav-menu">
-        <li class="mf-nav-item" *ngFor="let item of menuItems; let i = index">
-          <a href="#"
-             class="mf-nav-link"
-             [class.mf-active]="item.active"
-             (click)="onMenuItemClick(i)">
-            <span class="mf-nav-icon">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
+    <app-sidebare></app-sidebare>
   </div>
 
-  <!-- Header -->
-<div class="mf-header">
-  <div class="mf-header-left">
-    <h1>Bonjour, {{ user.firstName }}!</h1>
-    <p>Découvrez votre style du jour en analysant votre humeur</p>
-  </div>
-
-  <div class="mf-header-right">
-
-    <!-- Widget météo -->
-    <div >
-   <app-weather></app-weather>
-
+  <div class="mf-header">
+    <div class="mf-header-left">
+      <h1>Bonjour, {{ user.firstName }}!</h1>
+      <p>Découvrez votre style du jour en analysant votre humeur</p>
     </div>
 
-    <!-- Profil utilisateur -->
-    <div class="mf-user-profile" (click)="toggleUserMenu()">
-      <div class="mf-user-avatar">{{ user.initials }}</div>
-      <div class="mf-user-details">
-        <h4>{{ user.name }}</h4>
-        <p>{{ user.status }}</p>
+    <div class="mf-header-right">
+      <app-weather></app-weather>
+      <div class="mf-user-profile" (click)="toggleUserMenu()">
+        <div class="mf-user-avatar">{{ user.initials }}</div>
+        <div class="mf-user-details">
+          <h4>{{ user.name }}</h4>
+          <p>{{ user.status }}</p>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-
-  <!-- Main Content -->
   <div class="mf-main-content">
     <div class="mf-dashboard-grid">
-    <!-- Section Analyse d'Humeur mise à jour -->
-<div class="mf-mood-section">
-  <div class="mf-section-header">
-    <span class="mf-section-icon">🎭</span>
-    <h2 class="mf-section-title">Analyse d'Humeur</h2>
-  </div>
-
-  <!-- Zone de capture si pas encore analysé -->
-  <div class="mf-mood-capture-area"
-       [class.mf-analyzing]="isAnalyzing"
-       (click)="toggleCaptureOptions()"
-       *ngIf="!moodAnalyzed">
-
-    <ng-container *ngIf="!isAnalyzing">
-      <div class="mf-capture-icon">📸</div>
-      <div class="mf-capture-title">Capturez votre humeur</div>
-      <div class="mf-capture-subtitle">Utilisez votre webcam ou uploadez une photo</div>
-
-      <div class="mf-capture-buttons" *ngIf="showCaptureButtons">
-        <button class="mf-btn mf-btn-primary" (click)="openCamera($event)">
-          <span>📷</span> Webcam
-        </button>
-        <button class="mf-btn mf-btn-secondary" (click)="uploadPhoto($event)">
-          <span>📁</span> Upload
-        </button>
-      </div>
-    </ng-container>
-
-    <ng-container *ngIf="isAnalyzing">
-      <div class="mf-loading"></div>
-      <div class="mf-capture-title">Analyse en cours...</div>
-      <div class="mf-capture-subtitle">Détection de votre humeur</div>
-    </ng-container>
-
-    <video #cameraPreview class="mf-camera-preview"></video>
-  </div>
-
-  <!-- Affichage de l'humeur analysée -->
-  <div class="mf-current-mood-display" *ngIf="moodAnalyzed">
-    <div class="mf-mood-result-container">
-      <!-- Image capturée -->
-      <div class="mf-captured-image-container" *ngIf="capturedImageUrl">
-        <img [src]="capturedImageUrl" alt="Image capturée" class="mf-captured-image">
-        <div class="mf-image-overlay">
-          <button class="mf-retake-btn" (click)="retakePhoto()">
-            <span>🔄</span> Nouvelle photo
-          </button>
+      <div class="mf-mood-section">
+        <div class="mf-section-header">
+          <span class="mf-section-icon">🎭</span>
+          <h2 class="mf-section-title">Analyse d'Humeur</h2>
         </div>
-      </div>
 
-      <!-- Résultat de l'analyse -->
-      <div class="mf-mood-analysis-result">
-        <div class="mf-mood-emoji">{{ currentMood.emoji }}</div>
-        <div class="mf-mood-text">{{ currentMood.text }}</div>
-        <div class="mf-mood-confidence">
-          <span class="mf-confidence-label">Confiance:</span>
-          <div class="mf-confidence-bar">
-            <div class="mf-confidence-fill"
-                 [style.width.%]="currentMood.confidence"></div>
+        <div class="mf-mood-capture-area"
+             [class.mf-analyzing]="isAnalyzing"
+             (click)="toggleCaptureOptions()"
+             *ngIf="!moodAnalyzed">
+
+          <ng-container *ngIf="!isAnalyzing">
+            <div class="mf-capture-icon">📸</div>
+            <div class="mf-capture-title">Capturez votre humeur</div>
+            <div class="mf-capture-subtitle">Utilisez votre webcam ou uploadez une photo</div>
+
+            <div class="mf-capture-buttons" *ngIf="showCaptureButtons">
+              <button class="mf-btn mf-btn-primary" (click)="openCamera($event)">
+                <span>📷</span> Webcam
+              </button>
+              <button class="mf-btn mf-btn-secondary" (click)="uploadPhoto($event)">
+                <span>📁</span> Upload
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="isAnalyzing">
+            <div class="mf-loading"></div>
+            <div class="mf-capture-title">Analyse en cours...</div>
+            <div class="mf-capture-subtitle">Détection de votre humeur</div>
+          </ng-container>
+
+          <video #cameraPreview class="mf-camera-preview"></video>
+        </div>
+
+        <div class="mf-current-mood-display" *ngIf="moodAnalyzed">
+          <div class="mf-mood-result-container">
+            <div class="mf-captured-image-container" *ngIf="capturedImageUrl">
+              <img [src]="capturedImageUrl" alt="Image capturée" class="mf-captured-image">
+              <div class="mf-image-overlay">
+                <button class="mf-retake-btn" (click)="retakePhoto()">
+                  <span>🔄</span> Nouvelle photo
+                </button>
+              </div>
+            </div>
+
+            <div class="mf-mood-analysis-result">
+              <div class="mf-mood-emoji">{{ currentMood.emoji }}</div>
+              <div class="mf-mood-text">{{ currentMood.text }}</div>
+              <div class="mf-mood-confidence">
+                <span class="mf-confidence-label">Confiance:</span>
+                <div class="mf-confidence-bar">
+                  <div class="mf-confidence-fill"
+                       [style.width.%]="currentMood.confidence"></div>
+                </div>
+                <span class="mf-confidence-value">{{ currentMood.confidence }}%</span>
+              </div>
+            </div>
           </div>
-          <span class="mf-confidence-value">{{ currentMood.confidence }}%</span>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
 
       <!-- Outfit Recommendations -->

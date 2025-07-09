@@ -33,4 +33,18 @@ export class UploadService {
   return this.http.post<string>('http://localhost:8075/user/uploadBase64', body, { headers, responseType: 'text' as 'json' });
 }
 
+uploadBase64WithAnalysis(base64DataUrl: string): Observable<any> {
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+  const body = { image: base64DataUrl };
+
+  return this.http.post<any>(
+    'http://localhost:8075/user/uploadBase64WithAnalysis',
+    body,
+    { headers }
+  );
+}
+
+
+
 }

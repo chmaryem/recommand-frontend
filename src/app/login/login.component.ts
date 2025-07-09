@@ -19,37 +19,43 @@ export class LoginComponent  {
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit(): void {
-    const credentials = {
-      email: this.email,
-      password: this.password
-    };
-
-    this.authService.login(credentials).subscribe({
-      next: (res) => {
-    if (res.statusCode === 200) {
-  localStorage.setItem('token', res.token);
-  localStorage.setItem('refreshToken', res.refreshToken);
-  localStorage.setItem('role', res.role);
-
-  // ✅ Enregistrement des infos utilisateur
-  const user = {
-    name: res.name,
-    firstName: res.name, // si tu n'as pas de champ séparé firstName
-    email: res.email
+  const credentials = {
+    email: this.email,
+    password: this.password
   };
-  localStorage.setItem('user', JSON.stringify(user));
 
-  this.router.navigate(['/dashboard']);}
- else {
-          this.errorMessage = res.message;
+  this.authService.login(credentials).subscribe({
+    next: (res) => {
+      if (res.statusCode === 200) {
+        // ✅ Store tokens and role
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('refreshToken', res.refreshToken);
+        localStorage.setItem('role', res.role);
+
+        // ✅ Store user info
+        const user = {
+          name: res.name,
+          email: res.email
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // ✅ Redirect based on role
+        if (res.role === 'ADMIN') {
+          this.router.navigate(['/admin-dashboard']);
+        } else {
+          this.router.navigate(['/dashboard']);
         }
-      },
-      error: (err) => {
-        this.errorMessage = 'Erreur lors de la connexion';
-        console.error(err);
+      } else {
+        this.errorMessage = res.message;
       }
-    });
-  }
+    },
+    error: (err) => {
+      this.errorMessage = 'Erreur lors de la connexion';
+      console.error(err);
+    }
+  });
+}
+
 
 
 }

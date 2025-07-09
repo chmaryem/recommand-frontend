@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { UploadService } from '../services/upload.service';
 import { WeatherComponent } from '../weather/weather.component';
+import { RouterModule } from '@angular/router';
+import { MenuItem, SidebareComponent } from "../sidebare/sidebare.component";
 
 @Component({
   selector: 'app-dashboard',
- imports: [CommonModule, WeatherComponent],
+  imports: [CommonModule, WeatherComponent, RouterModule, SidebareComponent],
   standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
@@ -18,23 +20,20 @@ export class DashboardComponent implements OnInit {
   isAnalyzing = false;
   showCaptureButtons = false;
   capturedImageUrl: string | null = null;
-
   currentMood = {
     emoji: '😊',
     text: 'Vous semblez joyeux aujourd\'hui!',
     confidence: 87
   };
 
-  // Navigation menu items
-  menuItems = [
-    { icon: '🏠', label: 'Dashboard', active: true },
-    { icon: '📊', label: 'Historique', active: false },
-    { icon: '👤', label: 'Profil', active: false },
-    { icon: '⚙️', label: 'Paramètres', active: false },
-    { icon: '🔔', label: 'Notifications', active: false }
+  menuItems: MenuItem[] = [
+    { icon: '🏠', label: 'Dashboard', route: '/dashboard', active: true },
+    { icon: '📊', label: 'Historique', route: '/historique', active: false },
+    { icon: '👤', label: 'Profil', route: '/performance', active: false },
+    { icon: '⚙️', label: 'Paramètres', route: '/parametres', active: false },
+    { icon: '🔔', label: 'Notifications', route: '/notifications', active: false }
   ];
 
-  // Outfit recommendations
   outfitRecommendations = [
     {
       title: 'Look Ensoleillé & Joyeux',
@@ -58,7 +57,6 @@ export class DashboardComponent implements OnInit {
     }
   ];
 
-  // Quick actions
   quickActions = [
     { icon: '🔄', title: 'Nouvelle Tenue', description: 'Générer d\'autres suggestions' },
     { icon: '⏰', title: 'Notifications', description: 'Programmer votre minute style' },
@@ -66,7 +64,6 @@ export class DashboardComponent implements OnInit {
     { icon: '📤', title: 'Partager', description: 'Partager votre style du jour' }
   ];
 
-  // Statistics
   statistics = [
     { value: '127', label: 'Analyses d\'humeur' },
     { value: '89%', label: 'Satisfaction moyenne' },
@@ -74,7 +71,6 @@ export class DashboardComponent implements OnInit {
     { value: '32', label: 'Jours consécutifs' }
   ];
 
-  // User info
   user = {
     name: '',
     firstName: '',
@@ -83,7 +79,6 @@ export class DashboardComponent implements OnInit {
     imageUrl: ''
   };
 
-  // Weather info
   weather = {
     location: 'Tunis',
     temperature: '24°C',
@@ -94,6 +89,10 @@ export class DashboardComponent implements OnInit {
 
   showToastMessage = '';
   showToast = false;
+
+  // Dimensions fixes pour l'image capturée
+  readonly FIXED_IMAGE_WIDTH = 280;
+  readonly FIXED_IMAGE_HEIGHT = 200;
 
   constructor(private uploadService: UploadService) {}
 
@@ -112,7 +111,6 @@ export class DashboardComponent implements OnInit {
       this.user.status = 'Utilisateur';
       this.user.initials = this.getInitials(this.user.name);
 
-      // Charger l'image de profil si elle existe
       if (userObj.image) {
         this.user.imageUrl = `http://localhost:8075/user/image/${userObj.image}`;
       }
@@ -135,8 +133,8 @@ export class DashboardComponent implements OnInit {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+          width: { ideal: this.FIXED_IMAGE_WIDTH },
+          height: { ideal: this.FIXED_IMAGE_HEIGHT }
         }
       });
       this.currentStream = stream;
@@ -173,20 +171,30 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // Définir les dimensions du canvas
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Utiliser les dimensions fixes
+    canvas.width = this.FIXED_IMAGE_WIDTH;
+    canvas.height = this.FIXED_IMAGE_HEIGHT;
 
-    // Dessiner l'image de la vidéo sur le canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Dessiner l'image en conservant les proportions
+    const aspectRatio = video.videoWidth / video.videoHeight;
+    let sourceWidth, sourceHeight, sourceX, sourceY;
 
-    // Convertir en base64
+    if (aspectRatio > (this.FIXED_IMAGE_WIDTH / this.FIXED_IMAGE_HEIGHT)) {
+      sourceHeight = video.videoHeight;
+      sourceWidth = sourceHeight * (this.FIXED_IMAGE_WIDTH / this.FIXED_IMAGE_HEIGHT);
+      sourceX = (video.videoWidth - sourceWidth) / 2;
+      sourceY = 0;
+    } else {
+      sourceWidth = video.videoWidth;
+      sourceHeight = sourceWidth * (this.FIXED_IMAGE_HEIGHT / this.FIXED_IMAGE_WIDTH);
+      sourceX = 0;
+      sourceY = (video.videoHeight - sourceHeight) / 2;
+    }
+
+    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+
     const base64DataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-    // Arrêter la caméra
     this.stopCamera();
-
-    // Uploader l'image
     this.uploadBase64Image(base64DataUrl);
   }
 
@@ -199,49 +207,102 @@ export class DashboardComponent implements OnInit {
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
-        this.uploadFileImage(file);
+        this.processUploadedImage(file);
       }
     };
     input.click();
   }
 
-  uploadFileImage(file: File): void {
-    this.isAnalyzing = true;
-    this.displayToast('Upload en cours...');
+  processUploadedImage(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (event: any) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
-    this.uploadService.uploadUserImage(file).subscribe({
-      next: (fileName: string) => {
-        console.log('Image uploadée avec succès:', fileName);
-        this.capturedImageUrl = `http://localhost:8075/user/image/${fileName}`;
-        this.analyzeMood();
-        this.displayToast('Image uploadée avec succès!');
-      },
-      error: (error) => {
-        console.error('Erreur lors de l\'upload:', error);
-        this.isAnalyzing = false;
-        this.displayToast('Erreur lors de l\'upload de l\'image');
-      }
-    });
+        if (!ctx) return;
+
+        // Utiliser les dimensions fixes
+        canvas.width = this.FIXED_IMAGE_WIDTH;
+        canvas.height = this.FIXED_IMAGE_HEIGHT;
+
+        // Calculer le redimensionnement en conservant les proportions
+        const aspectRatio = img.width / img.height;
+        let sourceWidth, sourceHeight, sourceX, sourceY;
+
+        if (aspectRatio > (this.FIXED_IMAGE_WIDTH / this.FIXED_IMAGE_HEIGHT)) {
+          sourceHeight = img.height;
+          sourceWidth = sourceHeight * (this.FIXED_IMAGE_WIDTH / this.FIXED_IMAGE_HEIGHT);
+          sourceX = (img.width - sourceWidth) / 2;
+          sourceY = 0;
+        } else {
+          sourceWidth = img.width;
+          sourceHeight = sourceWidth * (this.FIXED_IMAGE_HEIGHT / this.FIXED_IMAGE_WIDTH);
+          sourceX = 0;
+          sourceY = (img.height - sourceHeight) / 2;
+        }
+
+        ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+
+        const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.8);
+        this.uploadBase64Image(resizedImageUrl);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   uploadBase64Image(base64DataUrl: string): void {
     this.isAnalyzing = true;
-    this.displayToast('Capture en cours de traitement...');
+    this.displayToast('Traitement de l\'image...');
 
-    this.uploadService.uploadBase64Image(base64DataUrl).subscribe({
-      next: (fileName: string) => {
-        console.log('Image capturée et uploadée avec succès:', fileName);
-        this.capturedImageUrl = `http://localhost:8075/user/image/${fileName}`;
-        this.analyzeMood();
-        this.displayToast('Capture réussie!');
-      },
-      error: (error) => {
-        console.error('Erreur lors de l\'upload de la capture:', error);
-        this.isAnalyzing = false;
-        this.displayToast('Erreur lors du traitement de la capture');
-      }
-    });
+   this.uploadService.uploadBase64WithAnalysis(base64DataUrl).subscribe({
+  next: (response) => {
+    this.capturedImageUrl = `http://localhost:8075/user/image/${response.fileName}`;
+    this.currentMood = {
+      emoji: this.getEmoji(response.emotion),
+      text: this.getMoodText(response.emotion),
+      confidence: response.confidence
+    };
+    this.moodAnalyzed = true;
+    this.isAnalyzing = false;
+  },
+  error: (err) => {
+    this.displayToast('Erreur lors de l\'analyse');
+    this.isAnalyzing = false;
   }
+});
+
+  }
+ getEmoji(emotion: string): string {
+  const map: { [key: string]: string } = {
+    Happy: '😊',
+    Sad: '😢',
+    Angry: '😠',
+    Disgust: '🤢',
+    Neutral: '😐',
+    Fear: '😨',
+    Surprise: '😮'
+  };
+  return map[emotion] || '🙂';
+}
+
+
+getMoodText(emotion: string): string {
+  const descriptions: { [key: string]: string } = {
+    Happy: "Vous semblez joyeux aujourd'hui!",
+    Sad: "Vous semblez triste ou mélancolique.",
+    Angry: "Vous semblez en colère ou frustré.",
+    Disgust: "Une émotion de dégoût a été détectée.",
+    Neutral: "Votre humeur semble neutre.",
+    Fear: "Une certaine peur ou anxiété a été détectée.",
+    Surprise: "Vous paraissez surpris ou étonné."
+  };
+  return descriptions[emotion] || "Analyse d'humeur terminée.";
+}
+
+
 
   stopCamera(): void {
     if (this.currentStream) {
@@ -255,12 +316,10 @@ export class DashboardComponent implements OnInit {
   }
 
   analyzeMood(): void {
-    // Simulate mood analysis
     setTimeout(() => {
       this.isAnalyzing = false;
       this.moodAnalyzed = true;
 
-      // Simuler différentes humeurs basées sur l'analyse
       const moods = [
         { emoji: '😊', text: 'Vous semblez joyeux aujourd\'hui!', confidence: 87 },
         { emoji: '😌', text: 'Vous paraissez serein et détendu', confidence: 82 },

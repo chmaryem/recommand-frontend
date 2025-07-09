@@ -1,0 +1,23 @@
+<div class="mf-sidebar">
+  <div class="mf-logo">
+    <div class="mf-logo-icon">👗</div>
+    <span>Outfit Maker</span>
+  </div>
+
+  <nav>
+    <ul class="mf-nav-menu">
+      <li class="mf-nav-item" *ngFor="let item of menuItems; let i = index">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="mf-active"
+          class="mf-nav-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="onMenuItemClick(i)"
+        >
+          <span class="mf-nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>

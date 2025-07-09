@@ -9,6 +9,9 @@ import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.compone
 import { AccountComponent } from './account/account.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WeatherComponent } from './weather/weather.component';
+import { PerformanceComponent } from './performance/performance.component';
+import { SidebareComponent } from './sidebare/sidebare.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -21,4 +24,9 @@ export const routes: Routes = [
   { path: 'forgotpass', component: ForgotpasswordComponent },
   { path: 'account', component: AccountComponent },
   { path: 'weather', component: WeatherComponent },
+  { path: 'performance', component: PerformanceComponent },
+   { path: 'sidebar', component: SidebareComponent },
+   { path: 'admin-dashboard', component: AdminDashboardComponent }
+
+
 ];

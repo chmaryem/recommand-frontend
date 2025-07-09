@@ -13,28 +13,33 @@ import { FormsModule } from '@angular/forms';
 })
 export class VerifyCodeComponent {
    email: string = '';
-  codeArray: string[] = ['', '', '', '', '', '']; // 6 cases
-  codeDigits = Array(6).fill(0); // Pour la directive *ngFor
-  code: string = ''; // code combiné
+  codeArray: string[] = ['', '', '', '', '', ''];
+  codeDigits = Array(6).fill(0);
+  code: string = '';
   message: string = '';
+   isAutoVerifying = false;
+  showSuccessModal = false
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  onDigitInput(index: number, event: any) {
+ onDigitInput(index: number, event: any) {
     const input = event.target;
     const value = input.value;
 
-    // avance automatiquement si un chiffre est saisi
     if (value.length === 1 && index < 5) {
       const nextInput = document.querySelectorAll('.code-box')[index + 1] as HTMLElement;
       nextInput?.focus();
     }
 
     this.updateCode();
+
+
+    if (this.code.length === 6 && !this.isAutoVerifying) {
+      this.onVerify();
+    }
   }
 
   onKeyDown(index: number, event: KeyboardEvent) {
-    // si backspace et champ vide, revenir au champ précédent
     if (event.key === 'Backspace' && this.codeArray[index] === '' && index > 0) {
       const prevInput = document.querySelectorAll('.code-box')[index - 1] as HTMLElement;
       prevInput?.focus();
@@ -45,24 +50,37 @@ export class VerifyCodeComponent {
     this.code = this.codeArray.join('');
   }
 
-  onVerify() {
-    this.updateCode(); // s'assurer que le code est mis à jour
+ onVerify() {
+    this.updateCode();
+
     if (this.code.length !== 6) {
       this.message = 'Veuillez entrer un code de 6 chiffres.';
       return;
     }
 
+    this.isAutoVerifying = true;
     this.authService.verifyCode(this.email, this.code).subscribe({
       next: (res) => {
-        alert(res.message); // "Email vérifié avec succès"
-        this.router.navigate(['/login']);
+        this.message = '';
+        this.showSuccessModal = true;
+
+        setTimeout(() => {
+          this.showSuccessModal = false;
+          this.router.navigate(['/login']);
+        }, 2500);
       },
       error: (err) => {
+        this.isAutoVerifying = false;
         this.message = err.error?.message || 'Erreur de vérification. Veuillez réessayer.';
         console.error(err);
       }
     });
   }
+
+  closeModal() {
+    this.showSuccessModal = false;
+  }
+
 
 
 
