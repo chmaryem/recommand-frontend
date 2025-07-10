@@ -25,7 +25,7 @@ private getAuthHeaders(): HttpHeaders {
 
 
 
-  // ✅ Nouvelle méthode sans email
+
   getPreferences(): Observable<any> {
     return this.http.get<any>(this.API_URL, { headers: this.getAuthHeaders() });
   }

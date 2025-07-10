@@ -21,7 +21,7 @@ export class SidebareComponent {
     { icon: '🏠', label: 'Dashboard', route: '/dashboard', active: true },
     { icon: '📊', label: 'Historique', route: '/historique', active: false },
     { icon: '👤', label: 'Profil', route: '/performance', active: false },
-    { icon: '⚙️', label: 'Paramètres', route: '/parametres', active: false },
+    { icon: '⚙️', label: 'Feedback', route: '/feedback', active: false },
     { icon: '🔔', label: 'Notifications', route: '/notifications', active: false }
   ];
 

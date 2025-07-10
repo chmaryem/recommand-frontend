@@ -112,25 +112,34 @@ export class PerformanceComponent implements OnInit {
   this.userPreferenceService.getPreferences().subscribe({
     next: (preferences: any) => {
       if (preferences) {
-        // ✅ Transformer otherPreferences (string) → array
         if (typeof preferences.otherPreferences === 'string') {
           preferences.otherPreferences = preferences.otherPreferences.split('|');
         }
 
         this.populateForm(preferences);
+
         this.savedPreferences = {
-          styleVestimentaire: preferences.style,
+          styleVestimentaire: preferences.style || preferences.styleVestimentaire,
           otherPreferences: preferences.otherPreferences,
+          couleursFavorites: preferences.couleursFavorites,
+          taille: preferences.taille,
+          budget: preferences.budget,
+          occasionsFrequentes: preferences.occasionsFrequentes,
           notificationTime: preferences.notificationTime,
           notificationsActivees: !!preferences.notificationTime
         };
+
+        // ✅ ➕ Ajoute cette ligne ici
+        this.showCardAfterSubmit = true;
       }
     },
     error: (error: any) => {
       console.error('Erreur lors du chargement des préférences:', error);
+      this.showCardAfterSubmit = false;
     }
   });
 }
+
 
   private populateForm(preferences: any): void {
     // Mise à jour des valeurs du formulaire avec les préférences existantes
@@ -310,5 +319,10 @@ export class PerformanceComponent implements OnInit {
   return Array.isArray(this.savedPreferences?.otherPreferences) &&
          this.savedPreferences!.otherPreferences!.length > 0;
 }
+
+editPreferences(): void {
+  this.showCardAfterSubmit = false; // Cacher la carte, afficher le formulaire
+}
+
 
 }

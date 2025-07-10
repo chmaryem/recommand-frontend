@@ -7,7 +7,7 @@
 
 
   <!-- Main Form -->
-  <div class="style-form-wrapper">
+ <div *ngIf="!showCardAfterSubmit" class="style-form-wrapper">
     <form [formGroup]="preferenceForm" (ngSubmit)="onSubmit()" class="preference-form">
 
       <!-- Style Section -->
@@ -139,7 +139,38 @@
       </div>
 
     </form>
+
+
   </div>
+  <!-- EN DEHORS de style-form-wrapper -->
+<div *ngIf="showCardAfterSubmit && savedPreferences" class="recap-wrapper">
+  <div class="preference-card centered-recap-card">
+    <h3>🧾 Récapitulatif de vos préférences</h3>
+    <ul>
+      <li><strong>Style :</strong> {{ savedPreferences.styleVestimentaire }}</li>
+      <li *ngIf="savedPreferences?.otherPreferences?.length">
+        <strong>Préférences :</strong>
+        <ul class="sub-preferences">
+          <li><strong>Préférences :</strong> {{ savedPreferences?.otherPreferences?.[0] || '–' }}</li>
+          <li><strong>Couleurs :</strong> {{ savedPreferences?.otherPreferences?.[1] || '–' }}</li>
+          <li><strong>Taille :</strong> {{ savedPreferences?.otherPreferences?.[2] || '–' }}</li>
+
+        </ul>
+      </li>
+      <li *ngIf="savedPreferences.notificationTime">
+        <strong>Notification à :</strong> {{ savedPreferences.notificationTime }}
+      </li>
+      <li>
+        <strong>Notifications activées :</strong>
+        {{ savedPreferences.notificationsActivees ? 'Oui' : 'Non' }}
+      </li>
+    </ul>
+    <button class="return-btn" (click)="showCardAfterSubmit = false">
+      🔄 Modifier mes préférences
+    </button>
+  </div>
+</div>
+
 
   <!-- Success Message -->
   <div *ngIf="showSuccess" class="success-message">
@@ -157,34 +188,5 @@
     </div>
   </div>
 
-  <!-- Ajoute ce bloc à la fin du fichier HTML -->
-  <div *ngIf="showCardAfterSubmit && savedPreferences" class="preference-card">
-    <h3>🧾 Récapitulatif de vos préférences</h3>
-    <ul>
-      <li><strong>Style :</strong> {{ savedPreferences.styleVestimentaire }}</li>
-   <li *ngIf="savedPreferences?.otherPreferences?.length">
-  <strong>Préférences :</strong>
- <div *ngIf="hasOtherPreferences()">
-
-    <ul class="sub-preferences">
-      <li><strong>Préférences :</strong> {{ savedPreferences?.otherPreferences?.[0] || '–' }}</li>
-      <li><strong>Couleurs :</strong> {{ savedPreferences?.otherPreferences?.[1] || '–' }}</li>
-      <li><strong>Taille :</strong> {{ savedPreferences?.otherPreferences?.[2] || '–' }}</li>
-      <li><strong>Budget :</strong> {{ savedPreferences?.otherPreferences?.[3] || '–' }}</li>
-      <li><strong>Occasions :</strong> {{ savedPreferences?.otherPreferences?.[4] || '–' }}</li>
-    </ul>
-  </div>
-</li>
-
-
-      <li *ngIf="savedPreferences.notificationTime">
-        <strong>Notification à :</strong> {{ savedPreferences.notificationTime }}
-      </li>
-      <li>
-        <strong>Notifications activées :</strong>
-        {{ savedPreferences.notificationsActivees ? 'Oui' : 'Non' }}
-      </li>
-    </ul>
-  </div>
 
 </div>

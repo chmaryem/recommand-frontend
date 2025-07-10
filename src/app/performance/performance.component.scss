@@ -5,10 +5,19 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f8f8 0%, #e1ccf5 100%);
   display: flex;
-  flex-direction: column;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
 }
+
+/* Ce wrapper est nécessaire pour centrer le contenu à droite de la sidebar */
+.style-form-wrapper {
+  margin-left: 280px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+}
+
 
 
 .preferences-sidebar {
@@ -37,6 +46,38 @@
   border-bottom: 1px solid #e2e8f0;
   width: 100%;
   min-width: 0;
+}
+
+.recap-wrapper {
+  margin-left: 680px; // pour libérer la place de la sidebar
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f8f8 0%, #e1ccf5 100%);
+}
+
+.centered-recap-card {
+  width: 100%;
+  max-width: 700px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
@@ -92,20 +133,18 @@
   font-size: 0.875rem;
 }
 
-/* Main Form Wrapper */
-.style-form-wrapper {
-  margin-left: 280px;
-  padding: 2rem 3rem;
-  max-width: 1200px;
-}
+
 
 .preference-form {
+  width: 100%;
+  max-width: 1000px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 24px;
   padding: 3rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
+
 
 /* Form Sections */
 .form-section {
