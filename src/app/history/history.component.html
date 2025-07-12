@@ -1,0 +1,124 @@
+<div class="history-layout">
+  <div class="preferences-sidebar">
+    <app-sidebare></app-sidebare>
+  </div>
+
+  <div class="history-content">
+    <div class="history-header">
+      <h1 class="history-title">
+        <span class="title-icon">📊</span>
+        Historique des Recommandations
+      </h1>
+
+      <div class="stats-cards">
+        <div class="stat-card">
+          <div class="stat-number">{{ historique.length }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ filteredHistory.length }}</div>
+          <div class="stat-label">Affichées</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="filters-section">
+      <div class="search-bar">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Rechercher par émotion ou météo..."
+          class="search-input"
+        >
+        <button class="search-btn">🔍</button>
+      </div>
+
+      <div class="filters-row">
+        <select [(ngModel)]="filterEmotion" (change)="onFilterChange()" class="filter-select">
+          <option value="">Toutes les émotions</option>
+          <option *ngFor="let emotion of emotions" [value]="emotion">
+            {{ getEmotionIcon(emotion) }} {{ emotion }}
+          </option>
+        </select>
+
+        <select [(ngModel)]="filterWeather" (change)="onFilterChange()" class="filter-select">
+          <option value="">Toutes les météos</option>
+          <option *ngFor="let weather of weathers" [value]="weather">
+            {{ getWeatherIcon(weather) }} {{ weather }}
+          </option>
+        </select>
+
+        <select [(ngModel)]="sortBy" (change)="onFilterChange()" class="filter-select">
+          <option value="recent">Plus récents</option>
+          <option value="oldest">Plus anciens</option>
+          <option value="emotion">Par émotion</option>
+          <option value="weather">Par météo</option>
+        </select>
+
+        <button (click)="clearFilters()" class="clear-btn">Effacer</button>
+      </div>
+    </div>
+
+    <!-- Liste des recommandations -->
+    <div class="history-list">
+      <div *ngFor="let rec of filteredHistory; trackBy: trackByFn" class="history-card">
+        <div class="card-header">
+          <div class="card-date">
+            <span class="date-icon">📅</span>
+            {{ rec.timestamp | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+          <button (click)="deleteHistoryItem(rec.id)" class="delete-btn" title="Supprimer">
+            🗑️
+          </button>
+        </div>
+
+        <div class="card-content">
+          <div class="image-section">
+            <img [src]="getImageUrl(rec.imagePath)" class="user-image" alt="Photo utilisateur">
+          </div>
+
+          <div class="info-section">
+            <div class="emotion-weather">
+              <div class="emotion-card">
+                <span class="emotion-icon">{{ getEmotionIcon(rec.emotion) }}</span>
+                <div class="emotion-info">
+                  <div class="emotion-name">{{ rec.emotion }}</div>
+                  <div class="confidence">{{ (rec.confidence * 100) | number:'1.0-0' }}% confiance</div>
+                </div>
+              </div>
+
+              <div class="weather-card">
+                <span class="weather-icon">{{ getWeatherIcon(rec.weather) }}</span>
+                <div class="weather-info">
+                  <div class="weather-name">{{ rec.weather }}</div>
+                  <div class="temperature">{{ rec.temperature }}°C</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="outfit-section">
+              <h3 class="outfit-title">👗 Tenue recommandée</h3>
+              <div class="outfit-items">
+                <div *ngFor="let item of parseOutfit(rec.recommendedOutfit)" class="outfit-item">
+                  <span class="item-icon">{{ item.icon }}</span>
+                  <div class="item-details">
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-description">{{ item.description }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredHistory.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>Aucune recommandation trouvée</h3>
+        <p>Essayez de modifier vos filtres ou ajoutez de nouvelles recommandations.</p>
+      </div>
+    </div>
+  </div>
+</div>

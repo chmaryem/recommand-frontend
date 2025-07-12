@@ -13,6 +13,7 @@ import { PerformanceComponent } from './performance/performance.component';
 import { SidebareComponent } from './sidebare/sidebare.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { FeedbackComponent } from './feedback/feedback.component';
+import { HistoryComponent } from './history/history.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -28,7 +29,9 @@ export const routes: Routes = [
   { path: 'performance', component: PerformanceComponent },
    { path: 'sidebar', component: SidebareComponent },
    { path: 'admin-dashboard', component: AdminDashboardComponent },
-    { path: 'feedback', component: FeedbackComponent }
+    { path: 'feedback', component: FeedbackComponent },
+    { path: 'history', component: HistoryComponent }
+
 
 
 

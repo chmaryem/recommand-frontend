@@ -145,31 +145,81 @@
   <!-- EN DEHORS de style-form-wrapper -->
 <div *ngIf="showCardAfterSubmit && savedPreferences" class="recap-wrapper">
   <div class="preference-card centered-recap-card">
-    <h3>🧾 Récapitulatif de vos préférences</h3>
-    <ul>
-      <li><strong>Style :</strong> {{ savedPreferences.styleVestimentaire }}</li>
-      <li *ngIf="savedPreferences?.otherPreferences?.length">
-        <strong>Préférences :</strong>
-        <ul class="sub-preferences">
-          <li><strong>Préférences :</strong> {{ savedPreferences?.otherPreferences?.[0] || '–' }}</li>
-          <li><strong>Couleurs :</strong> {{ savedPreferences?.otherPreferences?.[1] || '–' }}</li>
-          <li><strong>Taille :</strong> {{ savedPreferences?.otherPreferences?.[2] || '–' }}</li>
+    <h2 class="recap-title">🧾 Récapitulatif de vos préférences</h2>
 
-        </ul>
-      </li>
-      <li *ngIf="savedPreferences.notificationTime">
-        <strong>Notification à :</strong> {{ savedPreferences.notificationTime }}
-      </li>
-      <li>
-        <strong>Notifications activées :</strong>
-        {{ savedPreferences.notificationsActivees ? 'Oui' : 'Non' }}
-      </li>
-    </ul>
-    <button class="return-btn" (click)="showCardAfterSubmit = false">
-      🔄 Modifier mes préférences
-    </button>
+    <div class="recap-row">
+      <span class="recap-label">Style vestimentaire :</span>
+      <span class="recap-value">{{ savedPreferences.styleVestimentaire }}</span>
+    </div>
+    <!-- Groupe de préférences -->
+<div class="recap-group" *ngIf="savedPreferences?.otherPreferences as prefs">
+
+  <!-- Préférences -->
+  <div class="recap-row" *ngIf="prefs[0]">
+    <span class="recap-label">Préférences :</span>
+    <span class="recap-value">
+      <ng-container *ngFor="let item of prefs[0].split(',')">
+        <span class="recap-badge">{{ item }}-</span>
+      </ng-container>
+    </span>
+  </div>
+
+  <!-- Couleurs favorites -->
+  <div class="recap-row" *ngIf="prefs[1]">
+    <span class="recap-label">Couleurs favorites :</span>
+    <span class="recap-value">
+      <ng-container *ngFor="let color of prefs[1].split(',')">
+        <span class="recap-badge color-badge">{{ color }}-</span>
+      </ng-container>
+    </span>
+  </div>
+
+  <!-- Taille -->
+  <div class="recap-row" *ngIf="prefs[2]">
+    <span class="recap-label">Taille :</span>
+    <span class="recap-value">{{ prefs[2] }}</span>
+  </div>
+
+  <!-- Budget -->
+  <div class="recap-row" *ngIf="prefs[3]">
+    <span class="recap-label">Budget :</span>
+    <span class="recap-value">{{ prefs[3] }}</span>
+  </div>
+
+  <!-- Occasions -->
+  <div class="recap-row" *ngIf="prefs[4]">
+    <span class="recap-label">Occasions fréquentes :</span>
+    <span class="recap-value">
+      <ng-container *ngFor="let occasion of prefs[4].split(',')">
+        <span class="recap-badge">{{ occasion }}</span>
+      </ng-container>
+    </span>
+  </div>
+
+</div>
+
+
+
+
+
+
+    <div class="recap-row" *ngIf="savedPreferences.notificationTime">
+      <span class="recap-label">Heure de notification :</span>
+      <span class="recap-value">{{ savedPreferences.notificationTime }}</span>
+    </div>
+
+    <div class="recap-row">
+      <span class="recap-label">Notifications activées :</span>
+      <span class="recap-value">{{ savedPreferences.notificationsActivees ? 'Oui' : 'Non' }}</span>
+    </div>
+
+    <div class="recap-actions">
+      <button class="submit-btn" (click)="editPreferences()">🔄 Modifier mes préférences</button>
+    </div>
   </div>
 </div>
+
+
 
 
   <!-- Success Message -->

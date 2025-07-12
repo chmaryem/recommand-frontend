@@ -5,6 +5,22 @@ import { WeatherComponent } from '../weather/weather.component';
 import { RouterModule } from '@angular/router';
 import { MenuItem, SidebareComponent } from "../sidebare/sidebare.component";
 
+
+type LikedType = 'like' | 'dislike' | null;
+
+interface OutfitItem {
+  icon: string;
+  name: string;
+  description: string;
+}
+
+interface Outfit {
+  title: string;
+  score: number;
+  items: OutfitItem[];
+  liked: LikedType;
+}
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, WeatherComponent, RouterModule, SidebareComponent],
@@ -19,43 +35,51 @@ export class DashboardComponent implements OnInit {
   moodAnalyzed = false;
   isAnalyzing = false;
   showCaptureButtons = false;
+
   capturedImageUrl: string | null = null;
   currentMood = {
     emoji: '😊',
     text: 'Vous semblez joyeux aujourd\'hui!',
     confidence: 87
   };
+  historyId: number | null = null;
+
+
+
+
+
 
   menuItems: MenuItem[] = [
     { icon: '🏠', label: 'Dashboard', route: '/dashboard', active: true },
-    { icon: '📊', label: 'Historique', route: '/historique', active: false },
+    { icon: '📊', label: 'Historique', route: '/history', active: false },
     { icon: '👤', label: 'Profil', route: '/performance', active: false },
     { icon: '⚙️', label: 'Paramètres', route: '/parametres', active: false },
     { icon: '🔔', label: 'Notifications', route: '/notifications', active: false }
   ];
 
-  outfitRecommendations = [
-    {
-      title: 'Look Ensoleillé & Joyeux',
-      score: 92,
-      items: [
-        { icon: '👕', name: 'T-shirt', description: 'Coton coloré' },
-        { icon: '👖', name: 'Jean', description: 'Denim clair' },
-        { icon: '👟', name: 'Baskets', description: 'Blanches sport' }
-      ],
-      liked: null
-    },
-    {
-      title: 'Alternative Chic',
-      score: 85,
-      items: [
-        { icon: '👚', name: 'Blouse', description: 'Soie légère' },
-        { icon: '🩳', name: 'Short', description: 'Lin beige' },
-        { icon: '👡', name: 'Sandales', description: 'Cuir camel' }
-      ],
-      liked: null
-    }
-  ];
+  outfitRecommendations: Outfit[] = [
+  {
+    title: 'Look Ensoleillé & Joyeux',
+    score: 92,
+    items: [
+      { icon: '👕', name: 'T-shirt', description: 'Coton coloré' },
+      { icon: '👖', name: 'Jean', description: 'Denim clair' },
+      { icon: '👟', name: 'Baskets', description: 'Blanches sport' }
+    ],
+    liked: null
+  },
+  {
+    title: 'Alternative Chic',
+    score: 85,
+    items: [
+      { icon: '👚', name: 'Blouse', description: 'Soie légère' },
+      { icon: '🩳', name: 'Short', description: 'Lin beige' },
+      { icon: '👡', name: 'Sandales', description: 'Cuir camel' }
+    ],
+    liked: null
+  }
+];
+
 
   quickActions = [
     { icon: '🔄', title: 'Nouvelle Tenue', description: 'Générer d\'autres suggestions' },
@@ -257,7 +281,7 @@ export class DashboardComponent implements OnInit {
     this.isAnalyzing = true;
     this.displayToast('Traitement de l\'image...');
 
-   this.uploadService.uploadBase64WithAnalysis(base64DataUrl).subscribe({
+  this.uploadService.uploadBase64WithAnalysis(base64DataUrl).subscribe({
   next: (response) => {
     this.capturedImageUrl = `http://localhost:8075/user/image/${response.fileName}`;
     this.currentMood = {
@@ -267,6 +291,8 @@ export class DashboardComponent implements OnInit {
     };
     this.moodAnalyzed = true;
     this.isAnalyzing = false;
+    this.historyId = response.historyId; // 🔥 stocker l’id de recommandation
+    this.outfitRecommendations = [response.outfit]; // 🔥 mise à jour depuis backend
   },
   error: (err) => {
     this.displayToast('Erreur lors de l\'analyse');
@@ -277,29 +303,29 @@ export class DashboardComponent implements OnInit {
   }
  getEmoji(emotion: string): string {
   const map: { [key: string]: string } = {
-    Happy: '😊',
-    Sad: '😢',
-    Angry: '😠',
-    Disgust: '🤢',
-    Neutral: '😐',
-    Fear: '😨',
-    Surprise: '😮'
+    happy: '😊',
+    sad: '😢',
+    angry: '😠',
+    disgust: '🤢',
+    neutral: '😐',
+    fear: '😨',
+    surprise: '😮'
   };
-  return map[emotion] || '🙂';
+  return map[emotion.toLowerCase()] || '🙂';
 }
 
 
 getMoodText(emotion: string): string {
   const descriptions: { [key: string]: string } = {
-    Happy: "Vous semblez joyeux aujourd'hui!",
-    Sad: "Vous semblez triste ou mélancolique.",
-    Angry: "Vous semblez en colère ou frustré.",
-    Disgust: "Une émotion de dégoût a été détectée.",
-    Neutral: "Votre humeur semble neutre.",
-    Fear: "Une certaine peur ou anxiété a été détectée.",
-    Surprise: "Vous paraissez surpris ou étonné."
+    happy: "Vous semblez joyeux aujourd'hui!",
+    sad: "Vous semblez triste aujourd'hui!",
+    angry: "Vous semblez en colère ou frustré.",
+    disgust: "Une émotion de dégoût a été détectée.",
+    neutral: "Votre humeur semble neutre.",
+    fear: "Une certaine peur ou anxiété a été détectée.",
+    surprise: "Vous paraissez surpris ou étonné."
   };
-  return descriptions[emotion] || "Analyse d'humeur terminée.";
+  return descriptions[emotion.toLowerCase()] || "Analyse d'humeur terminée.";
 }
 
 
@@ -340,18 +366,52 @@ getMoodText(emotion: string): string {
     this.displayToast('Prêt pour une nouvelle capture');
   }
 
-  giveFeedback(type: 'like' | 'dislike', outfitIndex: number): void {
+ giveFeedback(type: 'like' | 'dislike', outfitIndex: number): void {
+  const accepted = type === 'like';
+  this.outfitRecommendations[outfitIndex].liked = type;
 
-    this.displayToast(type === 'like' ? 'Merci pour votre retour positif !' : 'Nous prendrons en compte vos préférences.');
+  if (this.historyId) {
+    this.uploadService.saveRecommendationFeedback(this.historyId, accepted).subscribe({
+      next: () => this.displayToast(accepted ? 'Merci pour votre retour positif !' : 'Nous prendrons en compte vos préférences.'),
+      error: () => this.displayToast('Erreur lors de l\'enregistrement du feedback')
+    });
   }
+}
 
-  generateNewOutfit(): void {
-    this.displayToast('Génération de nouvelles tenues en cours...');
-    // Simulate new outfit generation
-    setTimeout(() => {
-      this.displayToast('Nouvelles recommandations disponibles !');
-    }, 1500);
-  }
+ generateNewOutfit(): void {
+  this.displayToast('Génération de nouvelles tenues en cours...');
+
+  // Simuler appel intelligent local (tu peux appeler une API backend plus tard)
+  const newOutfit = {
+    title: 'Alternative Décontractée',
+    score: 80,
+    items: [
+      { icon: '👕', name: 'Polo', description: 'Bleu marine' },
+      { icon: '👖', name: 'Pantalon chino', description: 'Beige' },
+      { icon: '👟', name: 'Sneakers', description: 'Casual' }
+    ],
+    liked: null
+  };
+
+  this.outfitRecommendations.unshift(newOutfit); // remplacer le précédent
+
+  // Crée une nouvelle recommandation enregistrée
+  const payload = {
+    imagePath: this.capturedImageUrl?.split('/').pop(),
+    emotion: this.currentMood.text,
+    confidence: this.currentMood.confidence,
+    weather: this.weather.condition,
+    temperature: this.weather.temperature,
+    outfit: JSON.stringify(newOutfit),
+    accepted: null
+  };
+
+  this.uploadService.saveRecommendation(payload).subscribe({
+    next: () => this.displayToast('Nouvelle recommandation enregistrée.'),
+    error: () => this.displayToast('Erreur lors de l\'enregistrement.')
+  });
+}
+
 
   setNotificationTime(): void {
     this.displayToast('Paramètres de notification ouverts.');

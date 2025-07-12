@@ -19,7 +19,7 @@ export interface MenuItem {
 export class SidebareComponent {
   @Input() menuItems: MenuItem[] = [
     { icon: '🏠', label: 'Dashboard', route: '/dashboard', active: true },
-    { icon: '📊', label: 'Historique', route: '/historique', active: false },
+    { icon: '📊', label: 'Historique', route: '/history', active: false },
     { icon: '👤', label: 'Profil', route: '/performance', active: false },
     { icon: '⚙️', label: 'Feedback', route: '/feedback', active: false },
     { icon: '🔔', label: 'Notifications', route: '/notifications', active: false }

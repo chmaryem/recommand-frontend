@@ -45,6 +45,29 @@ uploadBase64WithAnalysis(base64DataUrl: string): Observable<any> {
   );
 }
 
+saveRecommendationFeedback(historyId: number, accepted: boolean): Observable<void> {
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+  const body = { historyId, accepted };
+
+  return this.http.post<void>('http://localhost:8075/user/saveRecommendationFeedback', body, { headers });
+}
+
+saveRecommendation(data: any): Observable<void> {
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+  return this.http.post<void>('http://localhost:8075/user/saveRecommendation', data, { headers });
+}
+
+getHistory(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+    return this.http.get<any[]>("http://localhost:8075/user/history", { headers });
+  }
+
+
+
 
 
 }

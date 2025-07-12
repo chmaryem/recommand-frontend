@@ -79,6 +79,47 @@
     transform: translateY(0);
   }
 }
+.recap-title {
+  font-size: 2rem;
+  color: #2d3748;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.recap-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 1rem;
+  color: #4a5568;
+}
+
+.recap-label {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.recap-value {
+  font-weight: 500;
+  text-align: right;
+  color: #5a6270;
+}
+
+.recap-group {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f7f9fc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.recap-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
 
 
 
