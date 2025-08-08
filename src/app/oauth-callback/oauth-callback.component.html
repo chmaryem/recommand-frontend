@@ -1,0 +1,28 @@
+ <div class="callback-container">
+      <div class="loading-card">
+        <div *ngIf="!errorMessage" class="spinner"></div>
+        <h3 *ngIf="!errorMessage">Finalisation de la connexion...</h3>
+        <p *ngIf="!errorMessage">Veuillez patienter pendant que nous vous connectons.</p>
+        
+        <div *ngIf="errorMessage" class="error-message">
+          <h3>Erreur de connexion</h3>
+          <p><strong>Message:</strong> {{ errorMessage }}</p>
+          <p *ngIf="errorDetails"><strong>Détails:</strong> {{ errorDetails }}</p>
+          <p *ngIf="statusCode"><strong>Code de statut:</strong> {{ statusCode }}</p>
+          <button (click)="redirectToLogin()" class="retry-btn">
+            Retour à la connexion
+          </button>
+          <button (click)="retry()" class="retry-btn" style="margin-left: 10px;">
+            Réessayer
+          </button>
+        </div>
+
+        <!-- Debug info -->
+        <div class="debug-info" *ngIf="debugMode">
+          <h4>Informations de debug:</h4>
+          <p>URL actuelle: {{ currentUrl }}</p>
+          <p>Paramètres: {{ queryParams | json }}</p>
+          <p>Cookies disponibles: {{ cookiesInfo }}</p>
+        </div>
+      </div>
+    </div>

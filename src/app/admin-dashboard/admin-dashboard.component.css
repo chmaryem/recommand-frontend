@@ -13,9 +13,11 @@
 }
 
 .header-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  width: 100%;
+  margin: 0;
   padding: 1.5rem 2rem;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -111,8 +113,10 @@
 
 /* Content Styles */
 .content {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 1.5rem 2rem;
   padding: 2rem;
 }
 
@@ -142,6 +146,10 @@
   justify-content: space-between;
   align-items: center;
 }
+.stat-icon.teal {
+  background: #0d9488; /* Couleur turquoise */
+}
+
 
 .stat-label {
   font-size: 0.875rem;

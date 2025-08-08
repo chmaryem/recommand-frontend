@@ -10,6 +10,7 @@
         required
         [(ngModel)]="email"
         #emailInput="ngModel"
+        [disabled]="isLoading"
       />
       <input
         type="password"
@@ -18,8 +19,16 @@
         required
         [(ngModel)]="password"
         #passwordInput="ngModel"
+        [disabled]="isLoading"
       />
-      <button type="submit" [disabled]="!loginForm.form.valid">LOGIN</button>
+      <button
+        type="submit"
+        [disabled]="!loginForm.form.valid || isLoading"
+        class="login-btn"
+      >
+        <span *ngIf="!isLoading">LOGIN</span>
+        <span *ngIf="isLoading" class="loading-spinner">🔄 Connexion...</span>
+      </button>
     </form>
 
     <div *ngIf="errorMessage" class="error-message">
@@ -35,8 +44,22 @@
 
     <p class="or">OR LOGIN WITH</p>
     <div class="social-icons">
-      <img src="assets/google.png" alt="Google" />
-      <img src="assets/facebook.jpg" alt="Facebook" />
+      <img
+        src="assets/google.png"
+        alt="Google"
+        (click)="loginWithGoogle()"
+        [class.disabled]="isLoading"
+        class="social-btn"
+        title="Se connecter avec Google"
+      />
+      <img
+        src="assets/facebook.jpg"
+        alt="Facebook"
+        (click)="loginWithFacebook()"
+        [class.disabled]="isLoading"
+        class="social-btn"
+        title="Se connecter avec Facebook"
+      />
     </div>
   </div>
 </div>

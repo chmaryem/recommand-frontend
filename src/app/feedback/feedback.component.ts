@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebareComponent } from "../sidebare/sidebare.component";
+import { FeedbackService } from '../services/feedback.service';
+import { Router } from '@angular/router';
 
 export interface OutfitItem {
   id: string;
@@ -34,14 +36,16 @@ export class FeedbackComponent implements OnInit {
   @Input() style: 'sunny' | 'alternative' = 'sunny';
   @Output() feedbackSubmitted = new EventEmitter<OutfitFeedback>();
 
-  // État du feedback
   liked: boolean | null = null;
   rating: number = 0;
   comment: string = '';
   selectedTags: string[] = [];
   showDetailedFeedback: boolean = false;
+  showConfirmation: boolean = false;
+  image: string = '';
+  errorMessage: string = '';
+  submittedRating: number | null = null;
 
-  // Tags disponibles
   availableTags = [
     { id: 'comfortable', label: 'Confortable', icon: '😌' },
     { id: 'stylish', label: 'Élégant', icon: '✨' },
@@ -57,27 +61,28 @@ export class FeedbackComponent implements OnInit {
     { id: 'poor-fit', label: 'Mauvaise coupe', icon: '📏' }
   ];
 
-  ngOnInit() {
-    // Initialisation du composant
-  }
+  constructor(private feedbackService: FeedbackService, private router: Router) {}
 
-  // Gérer le like/dislike
-  setLike(liked: boolean) {
-    this.liked = liked;
-    if (liked) {
-      this.showDetailedFeedback = true;
-    } else {
-      // Si dislike, on peut directement soumettre ou demander plus de détails
-      this.showDetailedFeedback = true;
+  ngOnInit() {
+    const navigation = history.state;
+    if (navigation && navigation.outfitItems) {
+      this.outfitItems = navigation.outfitItems;
+      this.outfitId = navigation.outfitId;
+      this.style = navigation.style || 'sunny';
+      this.image = navigation.image || '';
     }
   }
 
-  // Gérer la notation par étoiles
+  setLike(liked: boolean) {
+    this.liked = liked;
+    this.showDetailedFeedback = true;
+    this.errorMessage = '';
+  }
+
   setRating(rating: number) {
     this.rating = rating;
   }
 
-  // Gérer la sélection des tags
   toggleTag(tagId: string) {
     const index = this.selectedTags.indexOf(tagId);
     if (index > -1) {
@@ -87,45 +92,68 @@ export class FeedbackComponent implements OnInit {
     }
   }
 
-  // Vérifier si un tag est sélectionné
   isTagSelected(tagId: string): boolean {
     return this.selectedTags.includes(tagId);
   }
 
-  // Soumettre le feedback
-  submitFeedback() {
+  validateFeedback(): boolean {
     if (this.liked === null) {
-      return; // Pas de feedback si aucun choix
+      this.errorMessage = 'Veuillez indiquer si vous aimez ou non la tenue';
+      return false;
     }
+    if (this.rating === 0) {
+      this.errorMessage = 'Veuillez attribuer une note à la tenue';
+      return false;
+    }
+    return true;
+  }
 
-    const feedback: OutfitFeedback = {
+  submitFeedback() {
+    if (!this.validateFeedback()) return;
+
+    const feedbackPayload: OutfitFeedback = {
       outfitId: this.outfitId,
-      liked: this.liked,
+      liked: this.liked!,
       rating: this.rating,
       comment: this.comment.trim(),
       tags: this.selectedTags,
       timestamp: new Date()
     };
 
-    this.feedbackSubmitted.emit(feedback);
-    this.resetFeedback();
+    this.feedbackService.submitFeedback(feedbackPayload).subscribe({
+      next: () => {
+        this.submittedRating = this.rating;
+        this.showConfirmation = true;
+        this.feedbackSubmitted.emit(feedbackPayload);
+      },
+      error: () => {
+        this.errorMessage = 'Une erreur est survenue lors de l\'envoi du feedback';
+      }
+    });
   }
 
-  // Réinitialiser le feedback
+  closeConfirmation() {
+    this.resetFeedback();
+    this.router.navigate(['/dashboard'], {
+      state: { feedbackSentFor: this.outfitId }
+    });
+  }
+
   resetFeedback() {
     this.liked = null;
     this.rating = 0;
     this.comment = '';
     this.selectedTags = [];
     this.showDetailedFeedback = false;
+    this.showConfirmation = false;
+    this.errorMessage = '';
+    this.submittedRating = null;
   }
 
-  // Ignorer le feedback
   skipFeedback() {
     this.resetFeedback();
   }
 
-  // Obtenir les tags filtrés selon le type de feedback
   getFilteredTags() {
     if (this.liked === true) {
       return this.availableTags.filter(tag =>

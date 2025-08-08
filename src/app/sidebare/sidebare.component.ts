@@ -22,7 +22,7 @@ export class SidebareComponent {
     { icon: '📊', label: 'Historique', route: '/history', active: false },
     { icon: '👤', label: 'Profil', route: '/performance', active: false },
     { icon: '⚙️', label: 'Feedback', route: '/feedback', active: false },
-    { icon: '🔔', label: 'Notifications', route: '/notifications', active: false }
+
   ];
 
   onMenuItemClick(itemIndex: number): void {

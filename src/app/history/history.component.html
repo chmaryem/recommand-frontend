@@ -1,12 +1,12 @@
 <div class="history-layout">
-  <div class="preferences-sidebar">
+  <div class="mf-sidebar">
     <app-sidebare></app-sidebare>
   </div>
 
   <div class="history-content">
     <div class="history-header">
       <h1 class="history-title">
-        <span class="title-icon">📊</span>
+        <span class="title-icon"></span>
         Historique des Recommandations
       </h1>
 
@@ -20,6 +20,12 @@
           <div class="stat-label">Affichées</div>
         </div>
       </div>
+    </div>
+
+    <!-- Emotion Progression Chart Section -->
+    <div class="mood-chart-section">
+      <h2>Progression des émotions par jour</h2>
+      <canvas id="emotionChart" style="max-height: 300px;"></canvas>
     </div>
 
     <!-- Filtres et recherche -->
@@ -39,7 +45,7 @@
         <select [(ngModel)]="filterEmotion" (change)="onFilterChange()" class="filter-select">
           <option value="">Toutes les émotions</option>
           <option *ngFor="let emotion of emotions" [value]="emotion">
-            {{ getEmotionIcon(emotion) }} {{ emotion }}
+            {{ getEmotionIcon(emotion) }} {{ emotion | titlecase }}
           </option>
         </select>
 
@@ -69,7 +75,7 @@
             <span class="date-icon">📅</span>
             {{ rec.timestamp | date:'dd/MM/yyyy HH:mm' }}
           </div>
-          <button (click)="deleteHistoryItem(rec.id)" class="delete-btn" title="Supprimer">
+          <button (click)="askDeleteConfirmation(rec.id)" class="delete-btn" title="Supprimer">
             🗑️
           </button>
         </div>
@@ -84,8 +90,7 @@
               <div class="emotion-card">
                 <span class="emotion-icon">{{ getEmotionIcon(rec.emotion) }}</span>
                 <div class="emotion-info">
-                  <div class="emotion-name">{{ rec.emotion }}</div>
-                  <div class="confidence">{{ (rec.confidence * 100) | number:'1.0-0' }}% confiance</div>
+                  <div class="emotion-name">{{ rec.emotion | titlecase }}</div>
                 </div>
               </div>
 
@@ -119,6 +124,19 @@
         <h3>Aucune recommandation trouvée</h3>
         <p>Essayez de modifier vos filtres ou ajoutez de nouvelles recommandations.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation suppression -->
+<div *ngIf="confirmModalVisible" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Confirmer la suppression</h3>
+    <p>Êtes-vous sûr de vouloir supprimer cette recommandation ?</p>
+    <div class="spinner" *ngIf="showLoading"></div>
+    <div *ngIf="!showLoading">
+      <button (click)="confirmDelete()">Oui</button>
+      <button (click)="cancelDelete()">Non</button>
     </div>
   </div>
 </div>

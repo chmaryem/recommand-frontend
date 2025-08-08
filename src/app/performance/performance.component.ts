@@ -324,5 +324,10 @@ editPreferences(): void {
   this.showCardAfterSubmit = false; // Cacher la carte, afficher le formulaire
 }
 
+getColorHex(colorValue: string): string {
+  const color = this.colorOptions.find(c => c.value === colorValue);
+  return color ? color.hex : '#ffffff';
+}
+
 
 }

@@ -173,4 +173,11 @@ activeTab: string = 'overview';
   getWeatherPercentage(count: number): number {
     return (count / 50) * 100;
   }
+
+  get avgRecommendationsPerUser(): number {
+  return this.dashboardStats.activeUsers > 0
+    ? this.dashboardStats.totalRecommendations / this.dashboardStats.activeUsers
+    : 0;
+}
+
 }

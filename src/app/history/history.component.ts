@@ -3,6 +3,8 @@ import { UploadService } from '../services/upload.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebareComponent } from '../sidebare/sidebare.component';
+import { Chart, registerables, ChartConfiguration, Scale, CoreScaleOptions, Tick } from 'chart.js';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-history',
@@ -18,12 +20,19 @@ export class HistoryComponent implements OnInit {
   filterEmotion: string = '';
   filterWeather: string = '';
   sortBy: string = 'recent';
+  showErrorModal = false;
+  errorMessage = '';
+  showLoading = false;
+  confirmModalVisible = false;
+  itemToDeleteId: number | null = null;
 
-  // Émotions et météo disponibles pour les filtres
-  emotions: string[] = ['Joyeux', 'Calme', 'Énergique', 'Triste', 'Stressé'];
+  emotions: string[] = ['sad', 'fear', 'neutral', 'happy', 'angry'];
   weathers: string[] = ['Ensoleillé', 'Nuageux', 'Pluvieux', 'Neigeux', 'Venteux'];
+  emotionData: { date: string, emotion: string, value: number }[] = [];
 
-  constructor(private historiqueService: UploadService) {}
+  constructor(private historiqueService: UploadService) {
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.loadHistory();
@@ -33,8 +42,110 @@ export class HistoryComponent implements OnInit {
     this.historiqueService.getHistory().subscribe(data => {
       this.historique = data;
       this.filteredHistory = [...data];
+      this.aggregateEmotionData();
       this.applyFilters();
+      this.renderEmotionChart();
     });
+  }
+
+  aggregateEmotionData(): void {
+    const emotionMap: { [key: string]: { emotion: string, timestamp: string } } = {};
+
+    // Take the most recent emotion for each day
+    this.historique.forEach(item => {
+      const date = new Date(item.timestamp).toLocaleDateString('fr-FR');
+      if (!emotionMap[date] || new Date(item.timestamp) > new Date(emotionMap[date].timestamp)) {
+        emotionMap[date] = { emotion: item.emotion, timestamp: item.timestamp };
+      }
+    });
+
+
+    const emotionValues: { [key: string]: number } = {
+      sad: 1,
+      fear: 2,
+      neutral: 3,
+      happy: 4,
+      angry: 5
+    };
+
+    this.emotionData = Object.keys(emotionMap).map(date => ({
+      date,
+      emotion: emotionMap[date].emotion,
+      value: emotionValues[emotionMap[date].emotion] || 3 // Default to neutral if unknown
+    })).sort((a, b) => new Date(a.date.split('/').reverse().join('-')).getTime() - new Date(b.date.split('/').reverse().join('-')).getTime());
+  }
+
+  renderEmotionChart(): void {
+    const ctx = (document.getElementById('emotionChart') as HTMLCanvasElement).getContext('2d');
+    if (ctx) {
+      const labels: string[] = ['', 'Sad', 'fear','angry', 'neutral','happy', ''];
+      const config: ChartConfiguration = {
+        type: 'line',
+        data: {
+          labels: this.emotionData.map(data => data.date),
+          datasets: [{
+            label: 'Progression des émotions',
+            data: this.emotionData.map(data => data.value),
+            borderColor: 'rgba(242, 168, 243, 1)',
+            backgroundColor: 'rgba(212, 142, 237, 0.2)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: this.emotionData.map(data => this.getEmotionColor(data.emotion)),
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(206, 136, 213, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { title: { display: true, text: 'Date' } },
+            y: {
+              min: 0,
+              max: 6,
+              ticks: {
+                stepSize: 1,
+                callback: (tickValue: string | number, index: number, ticks: Tick[]): string | undefined => {
+                  const value = typeof tickValue === 'number' ? tickValue : parseFloat(tickValue);
+                  return Number.isFinite(value) ? labels[value] || '' : '';
+                }
+              },
+              title: { display: true, text: 'Émotion' }
+            }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            title: {
+              display: true,
+              text: 'Progression des émotions par jour',
+              font: { size: 18 }
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const index = context.dataIndex;
+                  const emotion = this.emotionData[index].emotion;
+                  return `Émotion: ${emotion.charAt(0).toUpperCase() + emotion.slice(1)}`;
+                }
+              }
+            }
+          }
+        }
+      };
+      new Chart(ctx, config);
+    }
+  }
+
+  getEmotionColor(emotion: string): string {
+    const colors: { [key: string]: string } = {
+      happy: 'rgba(75, 192, 192, 1)',
+      neutral: 'rgba(201, 203, 207, 1)',
+      angry: 'rgba(255, 99, 132, 1)',
+      sad: 'rgba(54, 162, 235, 1)',
+      fear: 'rgba(255, 206, 86, 1)'
+    };
+    return colors[emotion] || 'rgba(128, 128, 128, 1)';
   }
 
   getImageUrl(imagePath: string): string {
@@ -60,7 +171,6 @@ export class HistoryComponent implements OnInit {
   applyFilters(): void {
     let filtered = [...this.historique];
 
-    // Recherche textuelle
     if (this.searchTerm) {
       filtered = filtered.filter(item =>
         item.emotion.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -68,19 +178,18 @@ export class HistoryComponent implements OnInit {
       );
     }
 
-    // Filtre par émotion
     if (this.filterEmotion) {
       filtered = filtered.filter(item => item.emotion === this.filterEmotion);
     }
 
-    // Filtre par météo
     if (this.filterWeather) {
       filtered = filtered.filter(item => item.weather === this.filterWeather);
     }
 
-    // Tri
     this.sortHistory(filtered);
     this.filteredHistory = filtered;
+    this.aggregateEmotionData();
+    this.renderEmotionChart();
   }
 
   sortHistory(items: any[]): void {
@@ -110,11 +219,11 @@ export class HistoryComponent implements OnInit {
 
   getEmotionIcon(emotion: string): string {
     const icons: { [key: string]: string } = {
-      'Joyeux': '😊',
-      'Calme': '😌',
-      'Énergique': '⚡',
-      'Triste': '😢',
-      'Stressé': '😰'
+      happy: '😊',
+      neutral: '😌',
+      angry: '😣',
+      sad: '😢',
+      fear: '😰'
     };
     return icons[emotion] || '😐';
   }
@@ -130,14 +239,47 @@ export class HistoryComponent implements OnInit {
     return icons[weather] || '🌤️';
   }
 
-  deleteHistoryItem(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette recommandation ?')) {
-      this.historique = this.historique.filter(item => item.id !== id);
-      this.applyFilters();
-    }
+  askDeleteConfirmation(id: number): void {
+    this.itemToDeleteId = id;
+    this.confirmModalVisible = true;
   }
 
-   trackByFn(index: number, item: any): any {
+  confirmDelete(): void {
+  if (this.itemToDeleteId !== null) {
+    this.showLoading = true;
+
+    this.historiqueService.deleteHistoryItem(this.itemToDeleteId)
+      .pipe(
+        finalize(() => {
+          // Ceci s'exécute toujours, que la requête réussisse ou échoue
+          this.showLoading = false;
+          this.confirmModalVisible = false;
+          this.itemToDeleteId = null;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.historique = this.historique.filter(item => item.id !== this.itemToDeleteId);
+          this.applyFilters();
+        },
+        error: () => {
+          this.errorMessage = 'Erreur lors de la suppression.';
+          this.showErrorModal = true;
+        }
+      });
+  }
+}
+
+  cancelDelete(): void {
+    this.confirmModalVisible = false;
+    this.itemToDeleteId = null;
+  }
+
+  closeModal(): void {
+    this.showErrorModal = false;
+  }
+
+  trackByFn(index: number, item: any): any {
     return item.id || index;
   }
 }
