@@ -1,0 +1,190 @@
+/* Optimisation : Préchargement de l'image de fond */
+.login-background {
+  /* Utilisez une version compressée et optimisée de l'image */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Fallback */
+  background-image: url('../../../assets/still.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  /* Optimisation GPU */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.login-glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+
+  /* Optimisation pour éviter les repaints */
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+/* Optimisation des boutons sociaux */
+.social-btn {
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  border-radius: 8px;
+  padding: 8px;
+
+  /* Préchargement GPU */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.social-btn:hover:not(.disabled) {
+  transform: scale(1.05) translateZ(0); /* Réduire l'effet pour éviter les repaints */
+  opacity: 0.8;
+}
+
+.social-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none; /* Éviter les événements inutiles */
+}
+
+/* Animation optimisée */
+.loading-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  transform: translateZ(0); /* Force GPU */
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(360deg) translateZ(0); }
+}
+
+.login-btn {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 30px;
+  background-color: #822f49;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+
+  /* Optimisation transitions */
+  transition: all 0.2s ease;
+  will-change: auto;
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: #9a3654;
+  transform: translateY(-1px);
+}
+
+.error-message {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  text-align: center;
+
+  /* Animation d'entrée */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Optimisation des inputs */
+input {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 30px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+
+  /* Optimisation focus */
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(130, 47, 73, 0.5);
+}
+
+input::placeholder {
+  color: #ddd;
+}
+
+input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+a {
+  color: #eee;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.signup {
+  font-weight: bold;
+}
+
+.or {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.social-icons img {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+
+  /* Optimisation : dimensions fixes pour éviter les reflows */
+  object-fit: contain;
+}

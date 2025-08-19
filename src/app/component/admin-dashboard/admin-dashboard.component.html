@@ -1,0 +1,355 @@
+<div class="admin-dashboard" [class.loading]="isLoading">
+
+  <div class="loading-overlay" *ngIf="isLoading" aria-live="polite">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement…</p>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Admin • Dashboard</h1>
+        <p class="subtitle">Pilotage des recommandations d’outfits</p>
+      </div>
+      <div class="header-right">
+        <select [(ngModel)]="filterPeriod" (change)="onPeriodChange()" class="select" aria-label="Période">
+          <option value="1d">Dernières 24h</option>
+          <option value="7d">7 jours</option>
+          <option value="30d">30 jours</option>
+          <option value="90d">3 mois</option>
+        </select>
+        <button class="btn ghost" (click)="refreshData()" [disabled]="isLoading" aria-label="Rafraîchir">
+          ⟳
+        </button>
+        <button class="btn primary" (click)="exportData()" [disabled]="isLoading">
+          Exporter
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Navigation">
+    <button role="tab" class="tab" [class.active]="activeTab==='overview'" (click)="setActiveTab('overview')">
+      Vue d’ensemble
+    </button>
+    <button role="tab" class="tab" [class.active]="activeTab==='recommendations'" (click)="setActiveTab('recommendations')">
+      Historique
+    </button>
+  </nav>
+
+  <main class="content">
+
+    <section *ngIf="activeTab==='overview'" class="panel">
+
+      <div class="kpi-grid">
+        <article class="card kpi">
+          <div class="kpi-head">
+            <span class="kpi-label">Recommandations</span>
+            <span class="kpi-trend positive">{{ getTrendIcon(12.5) }}</span>
+          </div>
+          <div class="kpi-value">{{ displayStats.totalRecommendations | number }}</div>
+        </article>
+
+        <article class="card kpi">
+          <div class="kpi-head">
+            <span class="kpi-label">Utilisateurs actifs</span>
+            <span class="kpi-trend positive">{{ getTrendIcon(8.2) }}</span>
+          </div>
+          <div class="kpi-value">{{ displayStats.activeUsers | number }}</div>
+        </article>
+
+       <article class="card kpi">
+          <div class="kpi-head">
+            <span class="kpi-label">Note moyenne</span>
+          </div>
+          <div class="kpi-value">{{ displayStats.avgRating | number:'1.1-1' }}</div>
+        </article>
+
+        <article class="card kpi">
+          <div class="kpi-head">
+            <span class="kpi-label">Taux de satisfaction</span>
+          </div>
+          <div class="kpi-value">{{ displayStats.satisfactionRate | number:'1.1-1' }}%</div>
+        </article>
+      </div>
+<article class="card activity">
+  <div class="card-title">Activité ({{ filterPeriod }})</div>
+
+  <div class="activity-svg-wrap" #svgContainer>
+    <svg
+      *ngIf="isChartInitialized && activityData.length > 0"
+      [attr.width]="svgWidth()"
+      [attr.height]="chartHeight + labelSpace"
+      [attr.viewBox]="'0 0 ' + svgWidth() + ' ' + (chartHeight + labelSpace)"
+      preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label="Graphique d'activité des recommandations et utilisateurs"
+    >
+      <!-- Ligne horizontale (axe X) -->
+      <line
+        x1="40"
+        [attr.y1]="chartHeight"
+        [attr.x2]="svgWidth()-40"
+        [attr.y2]="chartHeight"
+        stroke="rgba(0,0,0,.1)"
+        stroke-width="1"
+      />
+
+      <!-- Ligne verticale (axe Y) -->
+      <line
+        x1="40"
+        y1="10"
+        x2="40"
+        [attr.y2]="chartHeight"
+        stroke="rgba(0,0,0,.1)"
+        stroke-width="1"
+      />
+
+      <!-- Graduations de l'axe Y -->
+      <g *ngFor="let tick of [0, 0.25, 0.5, 0.75, 1]; let i = index">
+        <line
+          x1="35"
+          [attr.y1]="chartHeight - (tick * (chartHeight - 20))"
+          x2="40"
+          [attr.y2]="chartHeight - (tick * (chartHeight - 20))"
+          stroke="rgba(0,0,0,.1)"
+          stroke-width="1"
+        />
+        <text
+          x="35"
+          [attr.y]="chartHeight - (tick * (chartHeight - 20)) + 4"
+          text-anchor="end"
+          class="svg-tick-label"
+        >
+          {{ (maxActivityValue * tick) | number:'1.0-0' }}
+        </text>
+      </g>
+
+      <!-- Barres pour chaque jour -->
+      <g *ngFor="let day of activityData; let i = index">
+        <!-- Barre des recommandations -->
+        <rect
+          [attr.x]="40 + barX(i, 'recos')"
+          [attr.y]="barY(day.recommendations)"
+          [attr.width]="barWidth"
+          [attr.height]="barHeight(day.recommendations)"
+          class="svg-bar svg-recos"
+          rx="3"
+          ry="3"
+        >
+          <title>Recommandations: {{ day.recommendations }} ({{ day.day }})</title>
+        </rect>
+
+        <!-- Barre des utilisateurs -->
+        <rect
+          [attr.x]="40 + barX(i, 'users')"
+          [attr.y]="barY(day.users)"
+          [attr.width]="barWidth"
+          [attr.height]="barHeight(day.users)"
+          class="svg-bar svg-users"
+          rx="3"
+          ry="3"
+        >
+          <title>Utilisateurs: {{ day.users }} ({{ day.day }})</title>
+        </rect>
+
+        <!-- Étiquette du jour -->
+        <text
+          [attr.x]="40 + i*groupWidth + groupWidth/2"
+          [attr.y]="chartHeight + 20"
+          text-anchor="middle"
+          class="svg-label"
+        >
+          {{ day.day }}
+        </text>
+      </g>
+
+      <!-- Légende intégrée -->
+      <g>
+        <rect x="60" y="10" width="12" height="12" rx="2" ry="2" class="svg-recos" />
+        <text x="78" y="20" class="svg-legend" font-size="12">Recommandations</text>
+
+        <rect x="200" y="10" width="12" height="12" rx="2" ry="2" class="svg-users" />
+        <text x="218" y="20" class="svg-legend" font-size="12">Utilisateurs</text>
+      </g>
+    </svg>
+
+    <div *ngIf="activityData.length === 0" class="no-data-message">
+      Aucune donnée d'activité disponible pour cette période.
+    </div>
+  </div>
+</article>
+
+      <div class="split-grid">
+        <article class="card">
+          <div class="card-title">Répartition des émotions</div>
+          <ul class="dist-list">
+            <li *ngFor="let kv of emotionStats | keyvalue">
+              <span class="badge" [class]="getEmotionColor(kv.key)">{{ kv.key }}</span>
+              <div class="bar-line">
+                <div class="bar-fill primary" [style.width.%]="getEmotionPercentage(kv.value)"></div>
+              </div>
+              <span class="pct">{{ getEmotionPercentage(kv.value) }}%</span>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-title">Répartition météo</div>
+          <ul class="dist-list">
+            <li *ngFor="let kv of weatherStats | keyvalue">
+              <span class="w-label">
+                <span class="w-ico">{{ getWeatherIcon(kv.key) }}</span>{{ kv.key }}
+              </span>
+              <div class="bar-line">
+                <div class="bar-fill success" [style.width.%]="getWeatherPercentage(kv.value)"></div>
+              </div>
+              <span class="pct">{{ getWeatherPercentage(kv.value) }}%</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="activeTab==='recommendations'" class="panel">
+      <div class="card filters">
+        <div class="filters-row">
+          <label for="emotionSel">Filtrer par émotion</label>
+          <select id="emotionSel" [(ngModel)]="selectedEmotion" (change)="onEmotionFilterChange()" class="select">
+            <option value="all">Toutes</option>
+            <option *ngFor="let emotion of emotions.slice(1)" [value]="emotion">{{ emotion }}</option>
+          </select>
+          <span class="count">{{ totalElements }} résultats</span>
+        </div>
+      </div>
+
+      <article class="card table-card">
+        <div class="table-head">
+          <h3>Historique des recommandations</h3>
+        </div>
+        <div class="table-wrap">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Émotion</th>
+                <th>Météo</th>
+                <th>Temp.</th>
+
+                <th>Outfit</th>
+                <th>Note</th>
+                <th>Feedback</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rec of recommendations; let i = index">
+                <td>
+                  <div class="user-cell">
+                    <div class="avatar" [style.backgroundColor]="'hsl(' + (rec.id * 45) + ',70%,55%)'">
+                      {{ rec.user?.charAt(0) }}
+                    </div>
+                    <div class="u-info">
+                      <div class="u-name">{{ rec.user }}</div>
+                      <div class="u-id">#{{ rec.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge small" [class]="getEmotionColor(rec.emotion)">{{ rec.emotion }}</span></td>
+                <td><span class="w-ico">{{ getWeatherIcon(rec.weather) }}</span> {{ rec.weather }}</td>
+                <td>
+                  <span [class.hot]="(rec.temperature ) > 20"
+                        [class.cold]="(rec.temperature ) < 15">
+                    {{ rec.temperature != null ? rec.temperature + '°C' : 'N/A' }}
+                  </span>
+                </td>
+
+                <td class="ellipsis" [title]="rec.outfit">{{ rec.outfit }}</td>
+                <td>
+                  <div class="stars">
+                    <span *ngFor="let s of getStarArray(rec.rating)" [class.filled]="s">★</span>
+                  </div>
+                </td>
+                <td class="ellipsis" [title]="rec.feedback">{{ rec.feedback }}</td>
+                <td class="muted">{{ rec.timestamp }}</td>
+               <!-- … dans la table, remplace le bouton Voir … -->
+<td class="actions">
+  <button class="icon-btn" title="Voir" (click)="openDetails(rec)" aria-haspopup="dialog">👁️</button>
+  <button class="icon-btn" title="Modifier">✏️</button>
+</td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <button class="btn ghost" (click)="prevPage()" [disabled]="page===0">Précédent</button>
+          <span class="muted">Page {{ page + 1 }} / {{ totalPages || 1 }}</span>
+          <button class="btn ghost" (click)="nextPage()" [disabled]="page + 1 >= totalPages">Suivant</button>
+        </div>
+      </article>
+    </section>
+  </main>
+  <!-- MODAL DÉTAIL UTILISATEUR -->
+<div
+  class="modal-backdrop"
+  *ngIf="detailsOpen"
+  (click)="onBackdropClick($event)"
+>
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="userModalTitle"
+    aria-describedby="userModalDesc"
+    (keydown.esc)="closeDetails()"
+    tabindex="0"
+  >
+    <header class="modal-header">
+      <h3 id="userModalTitle">Détail de l’utilisateur</h3>
+      <button class="icon-btn close" (click)="closeDetails()" aria-label="Fermer">✖</button>
+    </header>
+
+    <div id="userModalDesc" class="modal-body" *ngIf="selectedRec">
+      <div class="user-hero">
+        <div class="avatar lg" [style.backgroundColor]="'hsl(' + (selectedRec.id * 45) + ',70%,55%)'">
+          {{ selectedRec.user?.charAt(0) }}
+        </div>
+        <div>
+          <div class="u-name">{{ selectedRec.user }}</div>
+          <div class="u-id">ID #{{ selectedRec.id }}</div>
+        </div>
+      </div>
+
+      <ul class="detail-list">
+        <li><strong>Émotion :</strong>
+          <span class="badge" [class]="getEmotionColor(selectedRec.emotion)">
+            {{ selectedRec.emotion }}
+          </span>
+        </li>
+        <li><strong>Météo :</strong> <span class="w-ico">{{ getWeatherIcon(selectedRec.weather) }}</span> {{ selectedRec.weather }}</li>
+        <li><strong>Température :</strong> {{ selectedRec.temperature != null ? (selectedRec.temperature + '°C') : 'N/A' }}</li>
+        <li><strong>Lieu :</strong> {{ selectedRec.location }}</li>
+        <li><strong>Outfit recommandé :</strong> <span class="ellipsis" [title]="selectedRec.outfit">{{ selectedRec.outfit }}</span></li>
+        <li><strong>Note :</strong>
+          <span class="stars">
+            <span *ngFor="let s of getStarArray(selectedRec.rating)" [class.filled]="s">★</span>
+          </span>
+        </li>
+        <li *ngIf="selectedRec.feedback"><strong>Feedback :</strong> {{ selectedRec.feedback }}</li>
+        <li class="muted"><strong>Date :</strong> {{ selectedRec.timestamp }}</li>
+      </ul>
+    </div>
+
+    <footer class="modal-footer">
+      <button class="btn ghost" (click)="closeDetails()">Fermer</button>
+      <button class="btn primary" (click)="editSelected()">Modifier</button>
+    </footer>
+  </div>
+</div>
+
+</div>

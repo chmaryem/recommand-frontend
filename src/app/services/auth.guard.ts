@@ -14,7 +14,7 @@ export class AuthGuard implements CanActivate {
 
     if (!email) {
       console.log('Non authentifié, redirection vers /login');
-      this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+
       return false;
     }
 

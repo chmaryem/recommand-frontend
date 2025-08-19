@@ -1,0 +1,75 @@
+<div class="login-background">
+  <div class="login-glass-card">
+    <h2>Welcome</h2>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" novalidate>
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        required
+        [(ngModel)]="email"
+        #emailInput="ngModel"
+        [disabled]="isLoading"
+        autocomplete="email"
+        autocapitalize="none"
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        required
+        [(ngModel)]="password"
+        #passwordInput="ngModel"
+        [disabled]="isLoading"
+        autocomplete="current-password"
+      />
+      <button
+        type="submit"
+        [disabled]="!loginForm.form.valid || isLoading"
+        class="login-btn"
+      >
+        <span *ngIf="!isLoading">LOGIN</span>
+        <span *ngIf="isLoading" class="loading-spinner">🔄 Connexion...</span>
+      </button>
+    </form>
+
+    <div *ngIf="errorMessage" class="error-message" role="alert">
+      {{ errorMessage }}
+    </div>
+
+    <div class="links">
+      <a routerLink="/forgotpass">Forgot Password ?</a>
+      <a routerLink="/register" class="signup">Sign Up</a>
+    </div>
+
+    <hr />
+
+    <p class="or">OR LOGIN WITH</p>
+    <div class="social-icons">
+      <!-- Optimisation : lazy loading et optimisation des images -->
+      <img
+        src="assets/google.png"
+        alt="Google"
+        (click)="loginWithGoogle()"
+        [class.disabled]="isLoading"
+        class="social-btn"
+        title="Se connecter avec Google"
+        loading="lazy"
+        width="30"
+        height="30"
+      />
+      <img
+        src="assets/facebook.jpg"
+        alt="Facebook"
+        (click)="loginWithFacebook()"
+        [class.disabled]="isLoading"
+        class="social-btn"
+        title="Se connecter avec Facebook"
+        loading="lazy"
+        width="30"
+        height="30"
+      />
+    </div>
+  </div>
+</div>

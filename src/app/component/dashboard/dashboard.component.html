@@ -1,0 +1,230 @@
+<div class="mf-container">
+  <div class="mf-sidebar">
+    <app-sidebare></app-sidebare>
+  </div>
+
+  <div class="mf-header">
+    <div class="mf-header-left">
+      <h1>Bonjour, {{ user.firstName }}!</h1>
+      <p>Découvrez votre style du jour en analysant votre humeur</p>
+    </div>
+
+    <div class="mf-header-right">
+      <app-weather></app-weather>
+      <div class="mf-user-profile" (click)="toggleUserMenu($event)" #userMenuTrigger>
+        <div class="mf-user-avatar">{{ user.initials }}</div>
+        <div class="mf-user-details">
+          <h4>{{ user.name }}</h4>
+          <p>{{ user.status }}</p>
+        </div>
+        <div class="mf-user-menu" *ngIf="showUserMenu">
+          <a routerLink="/performance" aria-label="Ouvrir les paramètres">Paramètres</a>
+          <a (click)="logout()" aria-label="Se déconnexion">Déconnexion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mf-main-content">
+    <div class="mf-dashboard-grid">
+
+      <!-- Mood -->
+      <div class="mf-mood-section">
+        <div class="mf-section-header">
+          <span class="mf-section-icon"></span>
+          <h2 class="mf-section-title"></h2>
+        </div>
+
+        <div class="mf-mood-capture-area" [class.mf-analyzing]="isAnalyzing" (click)="toggleCaptureOptions()" *ngIf="!moodAnalyzed">
+          <ng-container *ngIf="!isAnalyzing">
+            <div class="mf-capture-icon">📸</div>
+            <div class="mf-capture-title">Capturez votre humeur</div>
+            <div class="mf-capture-subtitle">Utilisez votre webcam ou uploadez une photo</div>
+            <div class="mf-capture-buttons" *ngIf="showCaptureButtons">
+              <button class="mf-btn mf-btn-secondary" (click)="openCamera($event)" [disabled]="isRecommending" aria-label="Ouvrir la webcam">
+                <span>📷</span> Webcam
+              </button>
+              <button class="mf-btn mf-btn-secondary" (click)="uploadPhoto($event)" [disabled]="isRecommending" aria-label="Télécharger une photo">
+                <span>📁</span> Upload
+              </button>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="isAnalyzing">
+            <div class="mf-loading"></div>
+            <div class="mf-capture-title">Analyse en cours...</div>
+            <div class="mf-capture-subtitle">Détection de votre humeur</div>
+          </ng-container>
+          <video #cameraPreview class="mf-camera-preview"></video>
+        </div>
+
+        <div class="mf-current-mood-display" *ngIf="moodAnalyzed">
+          <div class="mf-mood-result-container">
+            <div class="mf-captured-image-container" *ngIf="capturedImageUrl">
+              <img [src]="capturedImageUrl" alt="Image capturée" class="mf-captured-image">
+              <div class="mf-image-overlay">
+                <button class="mf-retake-btn" (click)="retakePhoto()" [disabled]="isRecommending" aria-label="Prendre une nouvelle photo">
+                  <span>🔄</span> Nouvelle photo
+                </button>
+              </div>
+            </div>
+            <div class="mf-mood-analysis-result">
+              <div class="mf-mood-emoji">{{ currentMood.emoji }}</div>
+              <div class="mf-mood-text">{{ currentMood.text }}</div>
+              <div class="mf-mood-confidence">
+                <span class="mf-confidence-label">Confiance:</span>
+                <div class="mf-confidence-bar">
+                  <div class="mf-confidence-fill" [style.width.%]="currentMood.confidence"></div>
+                </div>
+                <span class="mf-confidence-value">{{ currentMood.confidence }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="mf-stats-section" *ngIf="barChartData">
+        <div class="mf-section-header">
+          <span class="mf-section-icon"></span>
+          <h2 class="mf-section-title"></h2>
+          <button class="mf-refresh-btn" (click)="refreshStatistics()" [disabled]="isRecommending" aria-label="Rafraîchir les statistiques"></button>
+        </div>
+        <div class="mf-stats-chart">
+          <canvas baseChart [data]="barChartData.data" [type]="barChartData.type" [options]="barChartData.options"></canvas>
+        </div>
+        <div class="mf-stats-grid">
+          <div class="mf-stat-card" *ngFor="let stat of statistics">
+            <div class="mf-stat-value">{{ stat.value }}</div>
+            <div class="mf-stat-label">{{ stat.label }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outfit -->
+      <div class="mf-outfit-section" aria-live="polite">
+        <div class="mf-section-header">
+          <span class="mf-section-icon"></span>
+          <h2 class="mf-section-title"></h2>
+        </div>
+
+
+<div *ngIf="isRecommending" class="mf-reco-loader">
+  <div class="mf-spinner"></div>
+  <div class="mf-loader-text">
+    Génération de la tenue en cours…
+  </div>
+  <div class="mf-loader-subtext">
+    Cela peut prendre quelques secondes, merci de patienter
+  </div>
+</div>
+
+
+        <div class="mf-outfit-card" *ngFor="let outfit of outfitRecommendations; let i = index">
+          <div class="mf-outfit-header">
+            <div class="mf-outfit-title">{{ outfit.title }}</div>
+            <div class="mf-outfit-score">{{ outfit.score }}% Match</div>
+          </div>
+
+          <!-- Items grid with image -->
+          <div class="mf-outfit-items">
+            <div class="mf-outfit-item" *ngFor="let item of outfit.items">
+              <div class="mf-outfit-item-icon">{{ item.icon }}</div>
+
+
+              <!-- Show the exact image from Spring->FastAPI -->
+              <img *ngIf="item.imageUrl"
+                   [src]="item.imageUrl"
+                   [alt]="item.name"
+                   class="mf-outfit-item-image">
+            </div>
+          </div>
+
+          <!-- Last feedback -->
+          <div class="mf-feedback-section" *ngIf="latestFeedback">
+            <div class="mf-section-header">
+              <span class="mf-section-icon">💬</span>
+              <h2 class="mf-section-title">Dernier Feedback</h2>
+            </div>
+
+            <div class="mf-feedback-card">
+              <div class="mf-feedback-header">
+                <div class="mf-feedback-title">Votre dernier avis</div>
+                <div class="mf-feedback-date">{{ formatDate(latestFeedback.timestamp) }}</div>
+              </div>
+
+              <div class="mf-feedback-content">
+                <div class="mf-rating-display">
+                  <span class="mf-feedback-label">Note :</span>
+                  <span class="mf-stars">
+                    <ng-container *ngFor="let star of [1,2,3,4,5]">
+                      <span [ngClass]="{ 'star-filled': star <= latestFeedback.rating, 'star-empty': star > latestFeedback.rating }">★</span>
+                    </ng-container>
+                  </span>
+                  <span class="mf-score-number">({{ latestFeedback.rating }}/5)</span>
+                </div>
+
+                <div class="mf-feedback-comment" *ngIf="latestFeedback.comment && latestFeedback.comment.trim() !== ''">
+                  <span class="mf-feedback-label">Commentaire :</span>
+                  <p>{{ latestFeedback.comment }}</p>
+                </div>
+
+                <div class="mf-feedback-recommendation-info" *ngIf="latestFeedback.recommendation">
+                  <span class="mf-feedback-label">Tenue évaluée :</span>
+                  <div class="mf-recommendation-summary">
+                    <span class="mf-recommendation-emotion">{{ getEmoji(latestFeedback.recommendation.emotion) }} {{ latestFeedback.recommendation.emotion }}</span>
+                    <span class="mf-recommendation-weather">🌤️ {{ latestFeedback.recommendation.weather }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mf-feedback-action">
+            <button class="mf-btn mf-feedback-detail-btn"
+                    *ngIf="!outfit.score || outfit.score > 5"
+                    (click)="openFeedbackPage(i)"
+                    [disabled]="isRecommending"
+                    aria-label="Donner un feedback">
+              Donner un feedback
+            </button>
+
+            <div *ngIf="outfit.score && outfit.score <= 5" class="mf-rating-display">
+              <span class="mf-feedback-label">Note utilisateur :</span>
+              <span class="mf-stars">
+                <ng-container *ngFor="let star of [1,2,3,4,5]">
+                  <span [ngClass]="{ 'star-filled': star <= outfit.score, 'star-empty': star > outfit.score }">★</span>
+                </ng-container>
+              </span>
+              <span class="mf-score-number">({{ outfit.score }}/5)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="mf-actions-section">
+        <div class="mf-section-header">
+          <span class="mf-section-icon"></span>
+          <h2 class="mf-section-title"></h2>
+        </div>
+
+        <div class="mf-quick-actions">
+          <div class="mf-action-card"
+               *ngFor="let action of quickActions; let i = index"
+               (click)="onActionClick(i)"
+               [class.disabled]="isRecommending">
+            <div class="mf-action-icon">{{ action.icon }}</div>
+            <div class="mf-action-title">{{ action.title }}</div>
+            <div class="mf-action-desc">{{ action.description }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="mf-notification-toast" [class.mf-show]="showToast">
+  {{ showToastMessage }}
+</div>
