@@ -294,7 +294,7 @@
       </article>
     </section>
   </main>
-  <!-- MODAL DÉTAIL UTILISATEUR -->
+
 <div
   class="modal-backdrop"
   *ngIf="detailsOpen"
@@ -333,7 +333,7 @@
         </li>
         <li><strong>Météo :</strong> <span class="w-ico">{{ getWeatherIcon(selectedRec.weather) }}</span> {{ selectedRec.weather }}</li>
         <li><strong>Température :</strong> {{ selectedRec.temperature != null ? (selectedRec.temperature + '°C') : 'N/A' }}</li>
-        <li><strong>Lieu :</strong> {{ selectedRec.location }}</li>
+
         <li><strong>Outfit recommandé :</strong> <span class="ellipsis" [title]="selectedRec.outfit">{{ selectedRec.outfit }}</span></li>
         <li><strong>Note :</strong>
           <span class="stars">

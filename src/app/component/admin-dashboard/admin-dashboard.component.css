@@ -42,7 +42,7 @@
 .btn:focus{box-shadow:0 0 0 3px rgba(33,39,68,.3)}
 .btn.primary{background:linear-gradient(135deg,#413280,#578edb);color:var(--color-primary);box-shadow:var(--shadow-sm)}
 .btn.primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-md)}
-.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.2rem;padding:.75rem}
+.btn.ghost{background:#b888c1;color:#151515;border:1px solid rgba(255,255,255,.2);font-size:1.2rem;padding:.75rem}
 .btn.ghost:hover:not(:disabled){background:rgba(255,255,255,.2)}
 .btn:disabled{opacity:.6;cursor:not-allowed}
 .select{padding:.75rem 1rem;border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-md);background:rgba(255,255,255,.1);color:#fff;font-size:.95rem;outline:none}
